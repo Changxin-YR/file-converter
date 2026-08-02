@@ -5,13 +5,20 @@
  */
 import { common } from '@kit.AbilityKit'
 import { BusinessError } from '@kit.BasicServicesKit'
-import { promptAction } from '@kit.ArkUI'
+import { promptAction, router } from '@kit.ArkUI'
 import { zlib } from '@kit.BasicServicesKit'
 import { fileIo as fs } from '@kit.CoreFileKit'
 import { FilePickerService } from '../services/FilePickerService'
 import { SaveService } from '../services/SaveService'
 import { FileUtils } from '../common/Utils'
 import { StorageConstants } from '../common/Constants'
+import { AppPageHeader } from '../components/AppPageHeader'
+import { FilePickerPanel } from '../components/FilePickerPanel'
+import { ChipItem, OptionChipGroup } from '../components/OptionChipGroup'
+import { PrimaryActionButton } from '../components/PrimaryActionButton'
+import { SegmentItem, SegmentedControl } from '../components/SegmentedControl'
+import { StatusPanel } from '../components/StatusPanel'
+import { UiConstants } from '../common/UiConstants'
 
 interface TimezoneInfo {
   key: string
@@ -30,6 +37,23 @@ const TIMEZONES: TimezoneInfo[] = [
   { key: 'ist', label: 'IST (印度)', offsetHours: 5.5 },
   { key: 'kst', label: 'KST (韩国)', offsetHours: 9 },
   { key: 'aest', label: 'AEST (澳东)', offsetHours: 10 }
+]
+
+const PAGE_TABS: SegmentItem[] = [
+  { key: 'archive', label: '档案转换', enabled: true },
+  { key: 'timezone', label: '时区转换', enabled: true }
+]
+
+const ARCHIVE_MODES: SegmentItem[] = [
+  { key: 'compress', label: '压缩', enabled: true },
+  { key: 'extract', label: '解压', enabled: true }
+]
+
+const ARCHIVE_FORMATS: ChipItem[] = [
+  { key: 'zip', label: 'ZIP', enabled: true, developing: false },
+  { key: '7z', label: '7Z', enabled: false, developing: true },
+  { key: 'tar.gz', label: 'TAR.GZ', enabled: false, developing: true },
+  { key: 'rar', label: 'RAR', enabled: false, developing: true }
 ]
 
 @Entry
@@ -57,191 +81,121 @@ struct ArchiveTimePage {
 
   build() {
     Navigation() {
-      Scroll() {
-        Column({ space: 16 }) {
-          this.TabSelector()
-          if (this.currentTab === 0) {
-            this.ArchiveSection()
-          } else {
-            this.TimezoneSection()
+      Column() {
+        AppPageHeader({ title: '档案与时间', onBack: () => router.back() })
+          .padding({ left: 4, right: 16 })
+        Scroll() {
+          Column({ space: UiConstants.SECTION_GAP }) {
+            this.TabSelector()
+            if (this.currentTab === 0) {
+              this.ArchiveSection()
+            } else {
+              this.TimezoneSection()
+            }
           }
+          .width('100%')
+          .constraintSize({ maxWidth: UiConstants.CONTENT_MAX_WIDTH })
+          .padding({ left: UiConstants.PAGE_PADDING_PHONE, right: UiConstants.PAGE_PADDING_PHONE, bottom: 24 })
         }
         .width('100%')
-        .padding(16)
+        .height('100%')
+        .align(Alignment.Top)
       }
       .width('100%')
       .height('100%')
+      .backgroundColor($r('app.color.page_background'))
     }
     .mode(NavigationMode.Stack)
-    .title('档案 & 时间')
-    .titleMode(NavigationTitleMode.Mini)
+    .hideTitleBar(true)
   }
 
   @Builder
   TabSelector() {
-    Row({ space: 0 }) {
-      Text('档案转换')
-        .fontSize(15)
-        .fontWeight(this.currentTab === 0 ? FontWeight.Medium : FontWeight.Normal)
-        .fontColor(this.currentTab === 0 ? Color.White : $r('app.color.text_primary'))
-        .padding({ left: 20, right: 20, top: 10, bottom: 10 })
-        .backgroundColor(this.currentTab === 0 ? $r('app.color.primary') : $r('app.color.chip_background'))
-        .borderRadius({ topLeft: 20, bottomLeft: 20 })
-        .onClick(() => { this.currentTab = 0 })
-      Text('时区转换')
-        .fontSize(15)
-        .fontWeight(this.currentTab === 1 ? FontWeight.Medium : FontWeight.Normal)
-        .fontColor(this.currentTab === 1 ? Color.White : $r('app.color.text_primary'))
-        .padding({ left: 20, right: 20, top: 10, bottom: 10 })
-        .backgroundColor(this.currentTab === 1 ? $r('app.color.primary') : $r('app.color.chip_background'))
-        .borderRadius({ topRight: 20, bottomRight: 20 })
-        .onClick(() => { this.currentTab = 1 })
-    }
-    .width('100%')
-    .justifyContent(FlexAlign.Center)
+    SegmentedControl({
+      items: PAGE_TABS,
+      selectedKey: this.currentTab === 0 ? 'archive' : 'timezone',
+      onSelect: (key: string) => {
+        this.currentTab = key === 'archive' ? 0 : 1
+      }
+    })
   }
 
   @Builder
   ArchiveSection() {
     Column({ space: 16 }) {
-      Row({ space: 0 }) {
-        Text('压缩')
-          .fontSize(14)
-          .fontColor(this.archiveMode === 0 ? Color.White : $r('app.color.text_primary'))
-          .padding({ left: 16, right: 16, top: 7, bottom: 7 })
-          .backgroundColor(this.archiveMode === 0 ? $r('app.color.primary') : $r('app.color.chip_background'))
-          .borderRadius({ topLeft: 16, bottomLeft: 16 })
-          .onClick(() => {
-            this.archiveMode = 0
-            this.selectedFiles = []
-            this.archiveStatus = ''
-          })
-        Text('解压')
-          .fontSize(14)
-          .fontColor(this.archiveMode === 1 ? Color.White : $r('app.color.text_primary'))
-          .padding({ left: 16, right: 16, top: 7, bottom: 7 })
-          .backgroundColor(this.archiveMode === 1 ? $r('app.color.primary') : $r('app.color.chip_background'))
-          .borderRadius({ topRight: 16, bottomRight: 16 })
-          .onClick(() => {
-            this.archiveMode = 1
-            this.selectedFiles = []
-            this.archiveStatus = ''
-          })
-      }
-
-      Row() {
-        Text(this.archiveMode === 0 ? '选择要压缩的文件' : '选择ZIP文件')
-          .fontSize(14)
-          .fontWeight(FontWeight.Medium)
-        Blank()
-        Button('选择文件')
-          .height(34)
-          .fontSize(13)
-          .enabled(!this.processing)
-          .onClick(() => this.pickArchiveFiles())
-      }
-      .width('100%')
-
-      if (this.selectedFiles.length > 0) {
-        ForEach(this.selectedFiles, (file: string) => {
-          Row() {
-            Text(FileUtils.getFileName(file))
-              .fontSize(14)
-              .maxLines(1)
-              .textOverflow({ overflow: TextOverflow.Ellipsis })
-              .layoutWeight(1)
-            Text(`.${FileUtils.getExtension(file)}`)
-              .fontSize(12)
-              .fontColor($r('app.color.text_secondary'))
-          }
-          .width('100%')
-          .padding({ left: 12, right: 12, top: 10, bottom: 10 })
-          .borderRadius(8)
-          .backgroundColor($r('app.color.card_background'))
-        }, (file: string) => file)
-      } else {
-        Column() {
-          Text(this.archiveMode === 0 ? '选择要压缩的文件' : '选择要解压的ZIP文件')
-            .fontSize(13)
-            .fontColor($r('app.color.text_secondary'))
+      SegmentedControl({
+        items: ARCHIVE_MODES,
+        selectedKey: this.archiveMode === 0 ? 'compress' : 'extract',
+        onSelect: (key: string) => {
+          this.archiveMode = key === 'compress' ? 0 : 1
+          this.selectedFiles = []
+          this.archiveStatus = ''
         }
-        .width('100%')
-        .height(80)
-        .justifyContent(FlexAlign.Center)
-        .borderRadius(12)
-        .borderWidth(1)
-        .borderStyle(BorderStyle.Dashed)
-        .borderColor($r('app.color.border'))
-      }
+      })
 
-      Button(this.processing ? '处理中...' : (this.archiveMode === 0 ? '压缩为 ZIP 并保存' : '解压到指定位置'))
-        .width('100%')
-        .height(44)
+      FilePickerPanel({
+        title: this.archiveMode === 0 ? '选择待压缩文件' : '选择 ZIP 文件',
+        description: this.archiveMode === 0 ? '最多选择 20 个文件' : '选择一个 ZIP 档案进行解压',
+        asset: $r('app.media.ui_tool_archive'),
+        buttonLabel: '选择文件',
+        selectedName: this.selectedArchiveSummary(),
+        isEnabled: !this.processing,
+        onPick: () => this.pickArchiveFiles()
+      })
+
+      Text('档案格式')
         .fontSize(16)
-        .enabled(!this.processing && this.selectedFiles.length > 0)
-        .onClick(() => {
+        .fontWeight(FontWeight.Medium)
+        .fontColor($r('app.color.text_primary'))
+      OptionChipGroup({
+        items: ARCHIVE_FORMATS,
+        selectedKey: 'zip',
+        disabled: this.processing,
+        onSelect: (_key: string) => {}
+      })
+
+      PrimaryActionButton({
+        label: this.archiveMode === 0 ? '压缩为 ZIP 并保存' : '解压到指定位置',
+        isEnabled: !this.processing && this.selectedFiles.length > 0,
+        loading: this.processing,
+        onTap: () => {
           if (this.archiveMode === 0) {
             this.compressToZip()
           } else {
             this.decompressZip()
           }
-        })
-
-      if (this.archiveStatus.length > 0) {
-        Text(this.archiveStatus)
-          .fontSize(13)
-          .fontColor($r('app.color.success'))
-      }
-
-      Column({ space: 8 }) {
-        Text('支持的格式')
-          .fontSize(14)
-          .fontWeight(FontWeight.Medium)
-        this.ArchiveRow('ZIP', '压缩', true)
-        this.ArchiveRow('解压 ZIP', '解压到指定位置', true)
-        this.ArchiveRow('7Z', '压缩/解压', false)
-        this.ArchiveRow('TAR.GZ', '压缩/解压', false)
-        this.ArchiveRow('RAR', '仅解压', false)
-      }
-      .width('100%')
-      .alignItems(HorizontalAlign.Start)
+        }
+      })
+      StatusPanel({
+        message: this.archiveStatus,
+        success: this.archiveStatus.startsWith('已'),
+        error: this.archiveStatus.length > 0 && !this.archiveStatus.startsWith('已'),
+        loading: false
+      })
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)
   }
 
   @Builder
-  ArchiveRow(format: string, desc: string, supported: boolean) {
-    Row() {
-      Text(format)
-        .fontSize(15)
-        .fontWeight(FontWeight.Medium)
-        .layoutWeight(1)
-      Text(desc)
-        .fontSize(13)
-        .fontColor($r('app.color.text_secondary'))
-        .layoutWeight(1)
-      Text(supported ? '可用' : '开发中')
-        .fontSize(12)
-        .fontColor(supported ? $r('app.color.success') : $r('app.color.text_tertiary'))
-    }
-    .width('100%')
-    .padding({ left: 12, right: 12, top: 12, bottom: 12 })
-    .borderRadius(8)
-    .backgroundColor($r('app.color.card_background'))
-  }
-
-  @Builder
   TimezoneSection() {
     Column({ space: 16 }) {
-      Text('时区转换')
-        .fontSize(16)
-        .fontWeight(FontWeight.Medium)
+      Image($r('app.media.ui_globe'))
+        .width('100%')
+        .height(132)
+        .objectFit(ImageFit.Contain)
+      Text('输入时间')
+        .fontSize(18)
+        .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.text_primary'))
 
       Row({ space: 12 }) {
         TextInput({ placeholder: '时', text: this.inputHour })
           .type(InputType.Number)
           .layoutWeight(1)
+          .height(UiConstants.TOUCH_MIN_HEIGHT)
+          .backgroundColor($r('app.color.surface_primary'))
+          .borderRadius(UiConstants.CONTROL_RADIUS)
           .onChange((value: string) => {
             this.inputHour = value
             this.convertTime()
@@ -251,6 +205,9 @@ struct ArchiveTimePage {
         TextInput({ placeholder: '分', text: this.inputMinute })
           .type(InputType.Number)
           .layoutWeight(1)
+          .height(UiConstants.TOUCH_MIN_HEIGHT)
+          .backgroundColor($r('app.color.surface_primary'))
+          .borderRadius(UiConstants.CONTROL_RADIUS)
           .onChange((value: string) => {
             this.inputMinute = value
             this.convertTime()
@@ -269,7 +226,7 @@ struct ArchiveTimePage {
               .fontColor(this.fromTzIndex === index ? Color.White : $r('app.color.text_primary'))
               .padding({ left: 10, right: 10, top: 5, bottom: 5 })
               .borderRadius(14)
-              .backgroundColor(this.fromTzIndex === index ? $r('app.color.primary') : $r('app.color.chip_background'))
+              .backgroundColor(this.fromTzIndex === index ? $r('app.color.brand_primary') : $r('app.color.control_selected'))
               .margin({ top: 6, right: 6 })
               .onClick(() => {
                 this.fromTzIndex = index
@@ -293,7 +250,7 @@ struct ArchiveTimePage {
               .fontColor(this.toTzIndex === index ? Color.White : $r('app.color.text_primary'))
               .padding({ left: 10, right: 10, top: 5, bottom: 5 })
               .borderRadius(14)
-              .backgroundColor(this.toTzIndex === index ? $r('app.color.primary') : $r('app.color.chip_background'))
+              .backgroundColor(this.toTzIndex === index ? $r('app.color.brand_primary') : $r('app.color.control_selected'))
               .margin({ top: 6, right: 6 })
               .onClick(() => {
                 this.toTzIndex = index
@@ -311,17 +268,27 @@ struct ArchiveTimePage {
           Text(this.timeResult)
             .fontSize(22)
             .fontWeight(FontWeight.Bold)
-            .fontColor($r('app.color.primary'))
+            .fontColor(this.timeResult.startsWith('分钟') ? $r('app.color.error') : $r('app.color.brand_primary'))
         }
         .width('100%')
         .padding(16)
-        .borderRadius(12)
-        .backgroundColor($r('app.color.card_background'))
+        .borderRadius(UiConstants.CARD_RADIUS)
+        .backgroundColor($r('app.color.surface_primary'))
         .justifyContent(FlexAlign.Center)
       }
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)
+  }
+
+  private selectedArchiveSummary(): string {
+    if (this.selectedFiles.length === 0) {
+      return ''
+    }
+    if (this.selectedFiles.length === 1) {
+      return FileUtils.getFileName(this.selectedFiles[0])
+    }
+    return `${FileUtils.getFileName(this.selectedFiles[0])} 等 ${this.selectedFiles.length} 个文件`
   }
 
   private async pickArchiveFiles(): Promise<void> {

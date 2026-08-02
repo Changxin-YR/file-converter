@@ -47,7 +47,7 @@ struct Index {
       asset: $r('app.media.ui_tool_unit'), enabled: true
     },
     {
-      title: 'PDF 工具箱', description: '图片与文本 PDF 工具', route: 'pages/PdfToolsPage',
+      title: 'PDF 工具箱', description: '图片转 PDF / 文本PDF导出', route: 'pages/PdfToolsPage',
       asset: $r('app.media.ui_tool_pdf'), enabled: true
     }
   ]

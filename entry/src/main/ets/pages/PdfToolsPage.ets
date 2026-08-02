@@ -5,7 +5,7 @@
  */
 import { common } from '@kit.AbilityKit'
 import { BusinessError } from '@kit.BasicServicesKit'
-import { promptAction } from '@kit.ArkUI'
+import { promptAction, router } from '@kit.ArkUI'
 import { fileIo as fs } from '@kit.CoreFileKit'
 import { image } from '@kit.ImageKit'
 import { FilePickerService } from '../services/FilePickerService'
@@ -15,20 +15,27 @@ import { PdfGenerator, PdfImageData } from '../common/converters/PdfGenerator'
 import { WordGenerator } from '../common/converters/WordGenerator'
 import { TextCodec } from '../common/converters/TextCodec'
 import { PdfTextExtractResult, PdfTextExtractor } from '../common/converters/PdfTextExtractor'
+import { AppPageHeader } from '../components/AppPageHeader'
+import { FilePickerPanel } from '../components/FilePickerPanel'
+import { PrimaryActionButton } from '../components/PrimaryActionButton'
+import { StatusPanel } from '../components/StatusPanel'
+import { ToolListData, ToolListItem } from '../components/ToolListItem'
+import { UiConstants } from '../common/UiConstants'
 
 interface PdfTool {
   id: string
   title: string
   description: string
+  asset: Resource
   available: boolean
 }
 
 const PDF_TOOLS: PdfTool[] = [
-  { id: 'jpg2pdf', title: 'JPG转PDF', description: '将图片转换为PDF文件', available: true },
-  { id: 'word2pdf', title: '文本转PDF', description: 'TXT/MD转为PDF', available: true },
-  { id: 'html2pdf', title: 'HTML转PDF', description: '将网页文件转为PDF', available: true },
-  { id: 'pdf2word', title: 'PDF转Word', description: '项目自产文本PDF', available: true },
-  { id: 'pdf2md', title: 'PDF转Markdown', description: '项目自产文本PDF', available: true }
+  { id: 'jpg2pdf', title: '图片转 PDF', description: 'JPG、PNG、WEBP、BMP 图片合成 PDF', asset: $r('app.media.ui_pdf_image'), available: true },
+  { id: 'word2pdf', title: '文本转PDF', description: 'TXT/MD转为PDF', asset: $r('app.media.ui_pdf_text'), available: true },
+  { id: 'html2pdf', title: 'HTML 转 PDF', description: '提取 HTML 文本并生成 PDF', asset: $r('app.media.ui_pdf_html'), available: true },
+  { id: 'pdf2word', title: 'PDF 转 Word', description: '项目自产文本PDF', asset: $r('app.media.ui_pdf_word'), available: true },
+  { id: 'pdf2md', title: 'PDF 转 Markdown', description: '项目自产文本PDF', asset: $r('app.media.ui_pdf_markdown'), available: true }
 ]
 
 @Entry
@@ -50,36 +57,64 @@ struct PdfToolsPage {
 
   build() {
     Navigation() {
-      Scroll() {
-        Column({ space: 16 }) {
-          if (this.currentTool.length === 0) {
-            this.ToolGridSection()
-          } else {
-            this.ToolDetailSection()
+      Column() {
+        AppPageHeader({
+          title: this.currentTool.length === 0 ? 'PDF 工具箱' : this.getToolTitle(),
+          onBack: () => {
+            if (this.currentTool.length > 0) {
+              this.currentTool = ''
+              this.selectedFiles = []
+              this.statusText = ''
+              return
+            }
+            router.back()
           }
+        })
+          .padding({ left: 4, right: 16 })
+        Scroll() {
+          Column({ space: UiConstants.SECTION_GAP }) {
+            if (this.currentTool.length === 0) {
+              this.ToolGridSection()
+            } else {
+              this.ToolDetailSection()
+            }
+          }
+          .width('100%')
+          .constraintSize({ maxWidth: UiConstants.CONTENT_MAX_WIDTH })
+          .padding({ left: UiConstants.PAGE_PADDING_PHONE, right: UiConstants.PAGE_PADDING_PHONE, bottom: 24 })
         }
         .width('100%')
-        .padding(16)
+        .height('100%')
+        .align(Alignment.Top)
       }
       .width('100%')
       .height('100%')
+      .backgroundColor($r('app.color.page_background'))
     }
     .mode(NavigationMode.Stack)
-    .title(this.currentTool.length === 0 ? 'PDF 工具箱' : this.getToolTitle())
-    .titleMode(NavigationTitleMode.Mini)
+    .hideTitleBar(true)
   }
 
   @Builder
   ToolGridSection() {
     Column({ space: 12 }) {
-      Text('可用工具')
-        .fontSize(16)
-        .fontWeight(FontWeight.Medium)
+      Image($r('app.media.ui_hero_pdf'))
         .width('100%')
-
-      Flex({ wrap: FlexWrap.Wrap }) {
+        .height(132)
+        .objectFit(ImageFit.Contain)
+      Text('PDF 转换工具')
+        .fontSize(20)
+        .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.text_primary'))
+      Text('所有处理均在设备本地完成')
+        .fontSize(13)
+        .fontColor($r('app.color.text_secondary'))
+      Column({ space: 10 }) {
         ForEach(PDF_TOOLS, (tool: PdfTool) => {
-          this.ToolChip(tool)
+          ToolListItem({
+            data: this.toToolListData(tool),
+            onTap: (key: string) => this.selectTool(key)
+          })
         }, (tool: PdfTool) => tool.id)
       }
       .width('100%')
@@ -89,46 +124,8 @@ struct PdfToolsPage {
   }
 
   @Builder
-  ToolChip(tool: PdfTool) {
-    Column({ space: 4 }) {
-      Text(tool.title)
-        .fontSize(13)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(tool.available ? $r('app.color.text_primary') : $r('app.color.text_tertiary'))
-      Text(tool.description)
-        .fontSize(11)
-        .fontColor($r('app.color.text_secondary'))
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-    }
-    .width('47%')
-    .padding({ left: 12, right: 12, top: 12, bottom: 12 })
-    .margin({ right: '3%', bottom: 10 })
-    .borderRadius(10)
-    .backgroundColor($r('app.color.card_background'))
-    .opacity(tool.available ? 1 : 0.5)
-    .onClick(() => {
-      if (!tool.available) {
-        promptAction.showToast({ message: `${tool.title} 功能开发中` })
-        return
-      }
-      this.currentTool = tool.id
-      this.selectedFiles = []
-      this.statusText = ''
-    })
-  }
-
-  @Builder
   ToolDetailSection() {
     Column({ space: 16 }) {
-      Button('< 返回工具列表')
-        .fontSize(13)
-        .type(ButtonType.Normal)
-        .height(32)
-        .backgroundColor($r('app.color.chip_background'))
-        .fontColor($r('app.color.primary'))
-        .onClick(() => { this.currentTool = '' })
-
       this.FilePickSection()
       this.ExecuteSection()
     }
@@ -138,70 +135,69 @@ struct PdfToolsPage {
 
   @Builder
   FilePickSection() {
-    Column({ space: 8 }) {
-      Row() {
-        Text('选择文件')
-          .fontSize(16)
-          .fontWeight(FontWeight.Medium)
-        Blank()
-        Button('选择')
-          .height(34)
-          .fontSize(13)
-          .enabled(!this.processing)
-          .onClick(() => this.pickFiles())
-      }
-      .width('100%')
-
-      if (this.selectedFiles.length > 0) {
-        ForEach(this.selectedFiles, (file: string) => {
-          Row() {
-            Text(FileUtils.getFileName(file))
-              .fontSize(14)
-              .maxLines(1)
-              .textOverflow({ overflow: TextOverflow.Ellipsis })
-              .layoutWeight(1)
-          }
-          .width('100%')
-          .padding({ left: 12, right: 12, top: 10, bottom: 10 })
-          .borderRadius(8)
-          .backgroundColor($r('app.color.card_background'))
-        }, (file: string) => file)
-      } else {
-        Column() {
-          Text(this.getFileHint())
-            .fontSize(13)
-            .fontColor($r('app.color.text_secondary'))
-        }
-        .width('100%')
-        .height(80)
-        .justifyContent(FlexAlign.Center)
-        .borderRadius(12)
-        .borderWidth(1)
-        .borderStyle(BorderStyle.Dashed)
-        .borderColor($r('app.color.border'))
-      }
-    }
-    .width('100%')
-    .alignItems(HorizontalAlign.Start)
+    FilePickerPanel({
+      title: '选择文件',
+      description: this.getFileHint(),
+      asset: this.getToolAsset(),
+      buttonLabel: '选择文件',
+      selectedName: this.selectedFileSummary(),
+      isEnabled: !this.processing,
+      onPick: () => this.pickFiles()
+    })
   }
 
   @Builder
   ExecuteSection() {
     Column({ space: 12 }) {
-      Button(this.processing ? '处理中...' : this.getActionLabel())
-        .width('100%')
-        .height(44)
-        .fontSize(16)
-        .enabled(!this.processing && this.selectedFiles.length > 0)
-        .onClick(() => this.executeTool())
-
-      if (this.statusText.length > 0 && !this.processing) {
-        Text(this.statusText)
-          .fontSize(13)
-          .fontColor(this.statusText.startsWith('已') ? $r('app.color.success') : $r('app.color.error'))
-      }
+      PrimaryActionButton({
+        label: this.getActionLabel(),
+        isEnabled: !this.processing && this.selectedFiles.length > 0,
+        loading: this.processing,
+        onTap: () => this.executeTool()
+      })
+      StatusPanel({
+        message: this.statusText,
+        success: this.statusText.startsWith('已'),
+        error: this.statusText.length > 0 && !this.statusText.startsWith('已'),
+        loading: false
+      })
     }
     .width('100%')
+  }
+
+  private toToolListData(tool: PdfTool): ToolListData {
+    return {
+      key: tool.id,
+      title: tool.title,
+      description: tool.description,
+      asset: tool.asset,
+      enabled: tool.available
+    }
+  }
+
+  private selectTool(key: string): void {
+    this.currentTool = key
+    this.selectedFiles = []
+    this.statusText = ''
+  }
+
+  private getToolAsset(): Resource {
+    for (const tool of PDF_TOOLS) {
+      if (tool.id === this.currentTool) {
+        return tool.asset
+      }
+    }
+    return $r('app.media.ui_hero_pdf')
+  }
+
+  private selectedFileSummary(): string {
+    if (this.selectedFiles.length === 0) {
+      return ''
+    }
+    if (this.selectedFiles.length === 1) {
+      return FileUtils.getFileName(this.selectedFiles[0])
+    }
+    return `${FileUtils.getFileName(this.selectedFiles[0])} 等 ${this.selectedFiles.length} 个文件`
   }
 
   private getToolTitle(): string {

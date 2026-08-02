@@ -1,0 +1,13 @@
+{
+  "modelVersion": "5.0.0",
+  "name": "format_converter",
+  "version": "1.0.0",
+  "description": "本地文件格式转换工具",
+  "main": "",
+  "author": "MaxTools Studio",
+  "license": "Apache-2.0",
+  "dependencies": {},
+  "devDependencies": {
+    "@ohos/hypium": "1.0.19"
+  }
+}

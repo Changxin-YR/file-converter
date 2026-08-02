@@ -1,0 +1,29 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+  xmlns:w="urn:schemas-microsoft-com:office:word"
+  xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>文档</title>
+<!--[if gte mso 9]>
+<xml>
+  <w:WordDocument>
+    <w:View>Print</w:View>
+    <w:Zoom>100</w:Zoom>
+  </w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+body { font-family: '宋体', SimSun, serif; margin: 2.54cm; }
+p { margin: 0 0 6pt 0; font-size: 12pt; line-height: 1.6; }
+h1 { font-size: 22pt; font-weight: bold; }
+h2 { font-size: 16pt; font-weight: bold; }
+h3 { font-size: 14pt; font-weight: bold; }
+table { border-collapse: collapse; width: 100%; }
+td, th { border: 1px solid #000; padding: 4pt 8pt; font-size: 12pt; }
+</style>
+</head>
+<body>
+<p style="font-size:12pt;line-height:1.6;">FormatConverter offline QA<br/>中文内容：文件转换可用性验证<br/>Numbers: 20260801, 42, 3.14<br/>Symbols: &lt;tag&gt; &amp; &quot;quoted&quot;</p>
+<p style="font-size:12pt;line-height:1.6;">Second paragraph.</p>
+</body>
+</html>

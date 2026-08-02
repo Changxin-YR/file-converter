@@ -1,0 +1,14 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/DocumentConvertPage",
+    "pages/ImageConvertPage",
+    "pages/AudioConvertPage",
+    "pages/VideoConvertPage",
+    "pages/ImageToolsPage",
+    "pages/ArchiveTimePage",
+    "pages/UnitConverterPage",
+    "pages/PdfToolsPage",
+    "pages/AboutPage"
+  ]
+}

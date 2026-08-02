@@ -1,0 +1,5 @@
+[
+  { "id": "1", "name": "Alpha", "note": "contains, comma", "score": "98" },
+  { "id": "2", "name": "中文", "note": "quoted value", "score": "87" },
+  { "id": "3", "name": "Empty", "note": "", "score": "0" }
+]

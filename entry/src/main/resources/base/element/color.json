@@ -6,39 +6,71 @@
     },
     {
       "name": "page_background",
-      "value": "#F5F5F5"
+      "value": "#F7F9FD"
+    },
+    {
+      "name": "surface_primary",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "surface_secondary",
+      "value": "#FAFCFF"
+    },
+    {
+      "name": "brand_primary",
+      "value": "#1769FF"
+    },
+    {
+      "name": "brand_strong",
+      "value": "#0A56E8"
     },
     {
       "name": "primary",
-      "value": "#007DFF"
+      "value": "#1769FF"
     },
     {
       "name": "text_primary",
-      "value": "#182431"
+      "value": "#101522"
     },
     {
       "name": "text_secondary",
-      "value": "#99182431"
+      "value": "#5F6F8F"
     },
     {
       "name": "text_tertiary",
-      "value": "#66182431"
+      "value": "#8B98B2"
+    },
+    {
+      "name": "text_disabled",
+      "value": "#A8B1C2"
+    },
+    {
+      "name": "border_subtle",
+      "value": "#DFE7F3"
+    },
+    {
+      "name": "control_selected",
+      "value": "#EAF1FF"
+    },
+    {
+      "name": "control_disabled",
+      "value": "#EEF2F8"
     },
     {
       "name": "chip_background",
-      "value": "#1A007DFF"
+      "value": "#EAF1FF"
     },
     {
       "name": "border",
-      "value": "#33000000"
+      "value": "#DFE7F3"
     },
     {
       "name": "success",
-      "value": "#00A862"
+      "value": "#31B878"
     },
     {
       "name": "error",
-      "value": "#DE5040"
+      "value": "#E35D68"
     },
     {
       "name": "card_background",

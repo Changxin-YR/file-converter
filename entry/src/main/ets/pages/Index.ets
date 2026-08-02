@@ -19,7 +19,7 @@ struct Index {
 
   private functionCards: FunctionCard[] = [
     {
-      title: '图片转换', description: 'PNG/JPG/WEBP/BMP', route: 'pages/ImageConvertPage',
+      title: '图片转换', description: 'PNG/JPG/WEBP/BMP 格式互转', route: 'pages/ImageConvertPage',
       asset: $r('app.media.ui_tool_image'), enabled: true
     },
     {

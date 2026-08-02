@@ -5,7 +5,7 @@
  */
 import { common } from '@kit.AbilityKit'
 import { BusinessError } from '@kit.BasicServicesKit'
-import { promptAction } from '@kit.ArkUI'
+import { promptAction, router } from '@kit.ArkUI'
 import { fileIo as fs } from '@kit.CoreFileKit'
 import { FilePickerService } from '../services/FilePickerService'
 import { SaveService } from '../services/SaveService'
@@ -19,6 +19,12 @@ import { PdfGenerator } from '../common/converters/PdfGenerator'
 import { WordGenerator } from '../common/converters/WordGenerator'
 import { TextCodec } from '../common/converters/TextCodec'
 import { DocumentTargetResolver } from '../common/converters/DocumentTargetResolver'
+import { AppPageHeader } from '../components/AppPageHeader'
+import { FilePickerPanel } from '../components/FilePickerPanel'
+import { PrimaryActionButton } from '../components/PrimaryActionButton'
+import { StatusPanel } from '../components/StatusPanel'
+import { ChipItem, OptionChipGroup } from '../components/OptionChipGroup'
+import { UiConstants } from '../common/UiConstants'
 
 const DOC_SOURCE_SUFFIXES: string[] = ['.txt', '.csv', '.json', '.xml', '.html', '.md', '.log']
 
@@ -46,75 +52,43 @@ struct DocumentConvertPage {
 
   build() {
     Navigation() {
-      Scroll() {
-        Column({ space: 16 }) {
-          this.FileSection()
-          this.FormatSection()
-          this.EncodingSection()
-          this.ActionSection()
+      Column() {
+        AppPageHeader({ title: '文档格式转换', onBack: () => router.back() })
+          .padding({ left: 4, right: 16 })
+        Scroll() {
+          Column({ space: UiConstants.SECTION_GAP }) {
+            this.FileSection()
+            this.FormatSection()
+            this.EncodingSection()
+            this.ActionSection()
+          }
+          .width('100%')
+          .constraintSize({ maxWidth: UiConstants.CONTENT_MAX_WIDTH })
+          .padding({ left: UiConstants.PAGE_PADDING_PHONE, right: UiConstants.PAGE_PADDING_PHONE, bottom: 24 })
         }
         .width('100%')
-        .padding(16)
+        .height('100%')
+        .align(Alignment.Top)
       }
       .width('100%')
       .height('100%')
+      .backgroundColor($r('app.color.page_background'))
     }
     .mode(NavigationMode.Stack)
-    .title('文档格式转换')
-    .titleMode(NavigationTitleMode.Mini)
+    .hideTitleBar(true)
   }
 
   @Builder
   FileSection() {
-    Column({ space: 8 }) {
-      Row() {
-        Text('选择文档')
-          .fontSize(16)
-          .fontWeight(FontWeight.Medium)
-        Blank()
-        Button('选择文件')
-          .height(34)
-          .fontSize(13)
-          .enabled(!this.converting)
-          .onClick(() => this.pickFiles())
-      }
-      .width('100%')
-
-      if (this.selectedFiles.length > 0) {
-        ForEach(this.selectedFiles, (file: string) => {
-          Row() {
-            Text(FileUtils.getFileName(file))
-              .fontSize(14)
-              .maxLines(1)
-              .textOverflow({ overflow: TextOverflow.Ellipsis })
-              .layoutWeight(1)
-            Text(`.${FileUtils.getExtension(file)}`)
-              .fontSize(12)
-              .fontColor($r('app.color.text_secondary'))
-          }
-          .width('100%')
-          .padding({ left: 12, right: 12, top: 10, bottom: 10 })
-          .borderRadius(8)
-          .backgroundColor($r('app.color.card_background'))
-        }, (file: string) => file)
-      } else {
-        Column() {
-          Text('支持 TXT/CSV/JSON/XML/HTML/MD/LOG')
-            .fontSize(13)
-            .fontColor($r('app.color.text_secondary'))
-            .margin({ top: 8 })
-        }
-        .width('100%')
-        .height(120)
-        .justifyContent(FlexAlign.Center)
-        .borderRadius(12)
-        .borderWidth(1)
-        .borderStyle(BorderStyle.Dashed)
-        .borderColor($r('app.color.border'))
-      }
-    }
-    .width('100%')
-    .alignItems(HorizontalAlign.Start)
+    FilePickerPanel({
+      title: '选择文档',
+      description: '支持 TXT、CSV、JSON、XML、HTML、MD、LOG',
+      asset: $r('app.media.ui_picker_document'),
+      buttonLabel: '选择文件',
+      selectedName: this.selectedFileSummary(),
+      isEnabled: !this.converting,
+      onPick: () => this.pickFiles()
+    })
   }
 
   @Builder
@@ -122,7 +96,8 @@ struct DocumentConvertPage {
     Column({ space: 8 }) {
       Text('目标格式')
         .fontSize(16)
-        .fontWeight(FontWeight.Medium)
+        .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.text_primary'))
 
       FormatSelector({
         formats: this.getTargetFormats(),
@@ -148,26 +123,14 @@ struct DocumentConvertPage {
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
 
-      Flex({ wrap: FlexWrap.Wrap }) {
-        ForEach(SOURCE_ENCODINGS, (encoding: string) => {
-          Row() {
-            Text(encoding.toUpperCase())
-              .fontSize(14)
-              .fontColor(this.sourceEncoding === encoding ? Color.White : $r('app.color.text_primary'))
-          }
-          .padding({ left: 16, right: 16, top: 6, bottom: 6 })
-          .borderRadius(18)
-          .backgroundColor(this.sourceEncoding === encoding ? $r('app.color.primary') : $r('app.color.chip_background'))
-          .opacity(this.converting ? 0.4 : 1)
-          .margin({ top: 6, right: 8 })
-          .onClick(() => {
-            if (!this.converting) {
-              this.sourceEncoding = encoding
-            }
-          })
-        }, (encoding: string) => encoding)
-      }
-      .width('100%')
+      OptionChipGroup({
+        items: this.getEncodingItems(),
+        selectedKey: this.sourceEncoding,
+        disabled: this.converting,
+        onSelect: (encoding: string) => {
+          this.sourceEncoding = encoding
+        }
+      })
 
       Text('输出统一采用 UTF-8 编码')
         .fontSize(12)
@@ -180,24 +143,43 @@ struct DocumentConvertPage {
   @Builder
   ActionSection() {
     Column({ space: 12 }) {
-      Button(this.converting ? '转换中...' : '开始转换')
-        .width('100%')
-        .height(44)
-        .fontSize(16)
-        .enabled(!this.converting && this.selectedFiles.length > 0)
-        .onClick(() => this.startConvert())
+      PrimaryActionButton({
+        label: '开始转换',
+        isEnabled: !this.converting && this.selectedFiles.length > 0,
+        loading: this.converting,
+        onTap: () => this.startConvert()
+      })
 
       if (this.converting) {
         ConvertProgressBar({ progress: this.progress, total: 100, showText: true })
       }
 
-      if (this.statusText.length > 0 && !this.converting) {
-        Text(this.statusText)
-          .fontSize(13)
-          .fontColor(this.successCount > 0 ? $r('app.color.success') : $r('app.color.error'))
-      }
+      StatusPanel({
+        message: this.statusText,
+        success: this.successCount > 0,
+        error: this.statusText.length > 0 && this.successCount === 0,
+        loading: false
+      })
     }
     .width('100%')
+  }
+
+  private selectedFileSummary(): string {
+    if (this.selectedFiles.length === 0) {
+      return ''
+    }
+    if (this.selectedFiles.length === 1) {
+      return FileUtils.getFileName(this.selectedFiles[0])
+    }
+    return `${FileUtils.getFileName(this.selectedFiles[0])} 等 ${this.selectedFiles.length} 个文件`
+  }
+
+  private getEncodingItems(): ChipItem[] {
+    const items: ChipItem[] = []
+    for (const encoding of SOURCE_ENCODINGS) {
+      items.push({ key: encoding, label: encoding.toUpperCase(), enabled: true, developing: false })
+    }
+    return items
   }
 
   private async pickFiles(): Promise<void> {

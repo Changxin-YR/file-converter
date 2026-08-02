@@ -70,5 +70,9 @@ if (missingConstants.length > 0) {
 if (componentFailures.length > 0) {
   throw new Error(`UI component contract failed:\n${componentFailures.join('\n')}`)
 }
+const pickerSource = fs.readFileSync(path.join(componentsDir, 'FilePickerPanel.ets'), 'utf8')
+if (!pickerSource.includes('Row({ space:') || !pickerSource.includes('.height(156)')) {
+  throw new Error('FilePickerPanel must use the stable 156vp horizontal reference layout')
+}
 
 console.log('UI DESIGN SYSTEM CONTRACT PASSED')

@@ -4,7 +4,7 @@
  */
 import { common } from '@kit.AbilityKit'
 import { BusinessError } from '@kit.BasicServicesKit'
-import { promptAction } from '@kit.ArkUI'
+import { promptAction, router } from '@kit.ArkUI'
 import { photoAccessHelper } from '@kit.MediaLibraryKit'
 import { fileIo as fs } from '@kit.CoreFileKit'
 import { FilePickerService } from '../services/FilePickerService'
@@ -14,6 +14,11 @@ import { ConvertOptions, ConvertStatus, ConvertType, ConvertTask } from '../comm
 import { FileUtils } from '../common/Utils'
 import { FormatSelector } from '../components/FormatSelector'
 import { ConvertProgressBar } from '../components/ConvertProgressBar'
+import { AppPageHeader } from '../components/AppPageHeader'
+import { FilePickerPanel } from '../components/FilePickerPanel'
+import { PrimaryActionButton } from '../components/PrimaryActionButton'
+import { StatusPanel } from '../components/StatusPanel'
+import { UiConstants } from '../common/UiConstants'
 
 const IMAGE_TARGET_FORMATS: FormatInfo[] = [
   { extension: 'png', mimeType: 'image/png', displayName: 'PNG', category: ConvertType.IMAGE, nativeSupported: true },
@@ -45,75 +50,43 @@ struct ImageConvertPage {
 
   build() {
     Navigation() {
-      Scroll() {
-        Column({ space: 16 }) {
-          this.FileSection()
-          this.FormatSection()
-          this.QualitySection()
-          this.ActionSection()
+      Column() {
+        AppPageHeader({ title: '图片格式转换', onBack: () => router.back() })
+          .padding({ left: 4, right: 16 })
+        Scroll() {
+          Column({ space: UiConstants.SECTION_GAP }) {
+            this.FileSection()
+            this.FormatSection()
+            this.QualitySection()
+            this.ActionSection()
+          }
+          .width('100%')
+          .constraintSize({ maxWidth: UiConstants.CONTENT_MAX_WIDTH })
+          .padding({ left: UiConstants.PAGE_PADDING_PHONE, right: UiConstants.PAGE_PADDING_PHONE, bottom: 24 })
         }
         .width('100%')
-        .padding(16)
+        .height('100%')
+        .align(Alignment.Top)
       }
       .width('100%')
       .height('100%')
+      .backgroundColor($r('app.color.page_background'))
     }
     .mode(NavigationMode.Stack)
-    .title('图片格式转换')
-    .titleMode(NavigationTitleMode.Mini)
+    .hideTitleBar(true)
   }
 
   @Builder
   FileSection() {
-    Column({ space: 8 }) {
-      Row() {
-        Text('选择图片')
-          .fontSize(16)
-          .fontWeight(FontWeight.Medium)
-        Blank()
-        Button('选择图片')
-          .height(34)
-          .fontSize(13)
-          .enabled(!this.converting)
-          .onClick(() => this.pickFiles())
-      }
-      .width('100%')
-
-      if (this.selectedFiles.length > 0) {
-        ForEach(this.selectedFiles, (file: string) => {
-          Row() {
-            Text(FileUtils.getFileName(file))
-              .fontSize(14)
-              .maxLines(1)
-              .textOverflow({ overflow: TextOverflow.Ellipsis })
-              .layoutWeight(1)
-            Text(`.${FileUtils.getExtension(file)}`)
-              .fontSize(12)
-              .fontColor($r('app.color.text_secondary'))
-          }
-          .width('100%')
-          .padding({ left: 12, right: 12, top: 10, bottom: 10 })
-          .borderRadius(8)
-          .backgroundColor($r('app.color.card_background'))
-        }, (file: string) => file)
-      } else {
-        Column() {
-          Text('选择需要转换格式的图片')
-            .fontSize(13)
-            .fontColor($r('app.color.text_secondary'))
-            .margin({ top: 8 })
-        }
-        .width('100%')
-        .height(120)
-        .justifyContent(FlexAlign.Center)
-        .borderRadius(12)
-        .borderWidth(1)
-        .borderStyle(BorderStyle.Dashed)
-        .borderColor($r('app.color.border'))
-      }
-    }
-    .width('100%')
-    .alignItems(HorizontalAlign.Start)
+    FilePickerPanel({
+      title: '选择图片',
+      description: '支持 PNG、JPG、JPEG、WEBP、BMP',
+      asset: $r('app.media.ui_picker_image'),
+      buttonLabel: '选择图片',
+      selectedName: this.selectedFileSummary(),
+      isEnabled: !this.converting,
+      onPick: () => this.pickFiles()
+    })
   }
 
   @Builder
@@ -121,7 +94,8 @@ struct ImageConvertPage {
     Column({ space: 8 }) {
       Text('目标格式')
         .fontSize(16)
-        .fontWeight(FontWeight.Medium)
+        .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.text_primary'))
 
       FormatSelector({
         formats: IMAGE_TARGET_FORMATS,
@@ -146,11 +120,13 @@ struct ImageConvertPage {
         Blank()
         Text(`${this.quality}%`)
           .fontSize(14)
-          .fontColor($r('app.color.text_secondary'))
+          .fontColor($r('app.color.brand_primary'))
       }
       .width('100%')
 
       Slider({ value: this.quality, min: 10, max: 100, step: 5 })
+        .selectedColor($r('app.color.brand_primary'))
+        .trackColor($r('app.color.border_subtle'))
         .onChange((value: number) => {
           this.quality = value
         })
@@ -162,24 +138,35 @@ struct ImageConvertPage {
   @Builder
   ActionSection() {
     Column({ space: 12 }) {
-      Button(this.converting ? '转换中...' : '开始转换并保存到相册')
-        .width('100%')
-        .height(44)
-        .fontSize(16)
-        .enabled(!this.converting && this.selectedFiles.length > 0)
-        .onClick(() => this.startConvertAndSave())
+      PrimaryActionButton({
+        label: '开始转换并保存到相册',
+        isEnabled: !this.converting && this.selectedFiles.length > 0,
+        loading: this.converting,
+        onTap: () => this.startConvertAndSave()
+      })
 
       if (this.converting) {
         ConvertProgressBar({ progress: this.progress, total: 100, showText: true })
       }
 
-      if (this.statusText.length > 0 && !this.converting) {
-        Text(this.statusText)
-          .fontSize(13)
-          .fontColor(this.successCount > 0 ? $r('app.color.success') : $r('app.color.error'))
-      }
+      StatusPanel({
+        message: this.statusText,
+        success: this.successCount > 0,
+        error: this.statusText.length > 0 && this.successCount === 0,
+        loading: false
+      })
     }
     .width('100%')
+  }
+
+  private selectedFileSummary(): string {
+    if (this.selectedFiles.length === 0) {
+      return ''
+    }
+    if (this.selectedFiles.length === 1) {
+      return FileUtils.getFileName(this.selectedFiles[0])
+    }
+    return `${FileUtils.getFileName(this.selectedFiles[0])} 等 ${this.selectedFiles.length} 张图片`
   }
 
   private async pickFiles(): Promise<void> {

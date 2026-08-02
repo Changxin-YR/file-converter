@@ -32,14 +32,14 @@ const missingConstants = requiredConstants.filter((name) => {
 
 const componentContracts = {
   'AppPageHeader.ets': ['title'],
-  'PrimaryActionButton.ets': ['label', 'enabled', 'loading', 'onTap'],
-  'FilePickerPanel.ets': ['title', 'description', 'asset', 'buttonLabel', 'enabled', 'onPick'],
+  'PrimaryActionButton.ets': ['label', 'isEnabled', 'loading', 'onTap'],
+  'FilePickerPanel.ets': ['title', 'description', 'asset', 'buttonLabel', 'isEnabled', 'onPick'],
   'SegmentedControl.ets': ['SegmentItem', 'items', 'selectedKey', 'onSelect'],
   'OptionChipGroup.ets': ['ChipItem', 'items', 'selectedKey', 'onSelect'],
   'ToolListItem.ets': ['ToolListData', 'data', 'onTap'],
-  'MetricInputField.ets': ['label', 'value', 'onChange'],
+  'MetricInputField.ets': ['label', 'value', 'isEnabled', 'onChange'],
   'StatusPanel.ets': ['message'],
-  'FunctionTile.ets': ['title', 'description', 'asset', 'enabled', 'onTap']
+  'FunctionTile.ets': ['title', 'description', 'asset', 'isEnabled', 'onTap']
 }
 const componentsDir = path.join(root, 'entry/src/main/ets/components')
 const componentFailures = []

@@ -8,7 +8,7 @@ export struct FilePickerPanel {
   @Prop asset: Resource = $r('app.media.app_icon')
   @Prop buttonLabel: string = ''
   @Prop selectedName: string = ''
-  @Prop enabled: boolean = true
+  @Prop isEnabled: boolean = true
   onPick: () => void = () => {}
 
   build() {
@@ -17,24 +17,24 @@ export struct FilePickerPanel {
         .width(92)
         .height(92)
         .objectFit(ImageFit.Contain)
-        .opacity(this.enabled ? 1 : 0.55)
+        .opacity(this.isEnabled ? 1 : 0.55)
       Text(this.title)
         .fontSize(18)
         .fontWeight(FontWeight.Medium)
-        .fontColor(this.enabled ? $r('app.color.text_primary') : $r('app.color.text_disabled'))
+        .fontColor(this.isEnabled ? $r('app.color.text_primary') : $r('app.color.text_disabled'))
       Text(this.selectedName.length > 0 ? this.selectedName : this.description)
         .fontSize(12)
-        .fontColor(this.enabled ? $r('app.color.text_secondary') : $r('app.color.text_disabled'))
+        .fontColor(this.isEnabled ? $r('app.color.text_secondary') : $r('app.color.text_disabled'))
         .maxLines(2)
         .textAlign(TextAlign.Center)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
       Row() {
         PrimaryActionButton({
           label: this.buttonLabel,
-          enabled: this.enabled,
+          isEnabled: this.isEnabled,
           loading: false,
           onTap: () => {
-            if (!this.enabled) {
+            if (!this.isEnabled) {
               return
             }
             this.onPick()

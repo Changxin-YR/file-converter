@@ -3,7 +3,7 @@ import { UiConstants } from '../common/UiConstants'
 @Component
 export struct PrimaryActionButton {
   @Prop label: string = ''
-  @Prop enabled: boolean = true
+  @Prop isEnabled: boolean = true
   @Prop loading: boolean = false
   onTap: () => void = () => {}
 
@@ -13,12 +13,12 @@ export struct PrimaryActionButton {
       .height(UiConstants.ACTION_HEIGHT)
       .fontSize(16)
       .fontWeight(FontWeight.Medium)
-      .fontColor(this.enabled && !this.loading ? Color.White : $r('app.color.text_disabled'))
-      .backgroundColor(this.enabled && !this.loading ? $r('app.color.brand_primary') : $r('app.color.control_disabled'))
+      .fontColor(this.isEnabled && !this.loading ? Color.White : $r('app.color.text_disabled'))
+      .backgroundColor(this.isEnabled && !this.loading ? $r('app.color.brand_primary') : $r('app.color.control_disabled'))
       .borderRadius(UiConstants.CONTROL_RADIUS)
-      .enabled(this.enabled && !this.loading)
+      .enabled(this.isEnabled && !this.loading)
       .onClick(() => {
-        if (!this.enabled || this.loading) {
+        if (!this.isEnabled || this.loading) {
           return
         }
         this.onTap()

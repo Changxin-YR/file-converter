@@ -30,11 +30,45 @@ const missingConstants = requiredConstants.filter((name) => {
   return !new RegExp(`static\\s+readonly\\s+${name}\\s*:`).test(constantsSource)
 })
 
+const componentContracts = {
+  'AppPageHeader.ets': ['title'],
+  'PrimaryActionButton.ets': ['label', 'enabled', 'loading', 'onTap'],
+  'FilePickerPanel.ets': ['title', 'description', 'asset', 'buttonLabel', 'enabled', 'onPick'],
+  'SegmentedControl.ets': ['SegmentItem', 'items', 'selectedKey', 'onSelect'],
+  'OptionChipGroup.ets': ['ChipItem', 'items', 'selectedKey', 'onSelect'],
+  'ToolListItem.ets': ['ToolListData', 'data', 'onTap'],
+  'MetricInputField.ets': ['label', 'value', 'onChange'],
+  'StatusPanel.ets': ['message'],
+  'FunctionTile.ets': ['title', 'description', 'asset', 'enabled', 'onTap']
+}
+const componentsDir = path.join(root, 'entry/src/main/ets/components')
+const componentFailures = []
+for (const [fileName, tokens] of Object.entries(componentContracts)) {
+  const filePath = path.join(componentsDir, fileName)
+  if (!fs.existsSync(filePath)) {
+    componentFailures.push(`${fileName}: missing`)
+    continue
+  }
+  const source = fs.readFileSync(filePath, 'utf8')
+  if (!source.includes("../common/UiConstants")) {
+    componentFailures.push(`${fileName}: does not import UiConstants`)
+  }
+  if (/#[0-9A-Fa-f]{3,8}\b/.test(source)) {
+    componentFailures.push(`${fileName}: contains a raw hex color`)
+  }
+  for (const token of tokens) {
+    if (!source.includes(token)) componentFailures.push(`${fileName}: missing API token ${token}`)
+  }
+}
+
 if (missingColors.length > 0) {
   throw new Error(`Missing UI color resources: ${missingColors.join(', ')}`)
 }
 if (missingConstants.length > 0) {
   throw new Error(`Missing UiConstants: ${missingConstants.join(', ')}`)
+}
+if (componentFailures.length > 0) {
+  throw new Error(`UI component contract failed:\n${componentFailures.join('\n')}`)
 }
 
 console.log('UI DESIGN SYSTEM CONTRACT PASSED')

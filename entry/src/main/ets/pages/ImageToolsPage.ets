@@ -8,8 +8,22 @@ import { BusinessError } from '@kit.BasicServicesKit'
 import { image } from '@kit.ImageKit'
 import { photoAccessHelper } from '@kit.MediaLibraryKit'
 import { fileIo as fs } from '@kit.CoreFileKit'
+import { router } from '@kit.ArkUI'
 import { FilePickerService } from '../services/FilePickerService'
 import { FileUtils } from '../common/Utils'
+import { AppPageHeader } from '../components/AppPageHeader'
+import { FilePickerPanel } from '../components/FilePickerPanel'
+import { MetricInputField } from '../components/MetricInputField'
+import { PrimaryActionButton } from '../components/PrimaryActionButton'
+import { SegmentItem, SegmentedControl } from '../components/SegmentedControl'
+import { StatusPanel } from '../components/StatusPanel'
+import { UiConstants } from '../common/UiConstants'
+
+const IMAGE_TOOL_ITEMS: SegmentItem[] = [
+  { key: 'resize', label: '图像调整', enabled: true },
+  { key: 'crop', label: '裁剪图片', enabled: true },
+  { key: 'color', label: '颜色提取', enabled: true }
+]
 
 @Entry
 @Component
@@ -28,8 +42,6 @@ struct ImageToolsPage {
   @State pickedColor: string = ''
 
   private pickerService?: FilePickerService
-  private tools: string[] = ['图像调整', '裁剪图片', '颜色选择器']
-
   aboutToAppear(): void {
     const context = getContext(this) as common.UIAbilityContext
     this.pickerService = new FilePickerService(context)
@@ -37,103 +49,67 @@ struct ImageToolsPage {
 
   build() {
     Navigation() {
-      Scroll() {
-        Column({ space: 16 }) {
-          this.ToolSelector()
-          this.FileSection()
-          if (this.currentTool === 0) {
-            this.ResizeSection()
-          } else if (this.currentTool === 1) {
-            this.CropSection()
-          } else if (this.currentTool === 2) {
-            this.ColorPickerSection()
+      Column() {
+        AppPageHeader({ title: '图片工具', onBack: () => router.back() })
+          .padding({ left: 4, right: 16 })
+        Scroll() {
+          Column({ space: UiConstants.SECTION_GAP }) {
+            this.ToolSelector()
+            this.FileSection()
+            if (this.currentTool === 0) {
+              this.ResizeSection()
+            } else if (this.currentTool === 1) {
+              this.CropSection()
+            } else if (this.currentTool === 2) {
+              this.ColorPickerSection()
+            }
+            this.StatusSection()
           }
-          this.StatusSection()
+          .width('100%')
+          .constraintSize({ maxWidth: UiConstants.CONTENT_MAX_WIDTH })
+          .padding({ left: UiConstants.PAGE_PADDING_PHONE, right: UiConstants.PAGE_PADDING_PHONE, bottom: 24 })
         }
         .width('100%')
-        .padding(16)
+        .height('100%')
+        .align(Alignment.Top)
       }
       .width('100%')
       .height('100%')
+      .backgroundColor($r('app.color.page_background'))
     }
     .mode(NavigationMode.Stack)
-    .title('图片工具')
-    .titleMode(NavigationTitleMode.Mini)
+    .hideTitleBar(true)
   }
 
   @Builder
   ToolSelector() {
-    Column({ space: 8 }) {
-      Text('选择工具')
-        .fontSize(16)
-        .fontWeight(FontWeight.Medium)
-
-      Flex({ wrap: FlexWrap.Wrap }) {
-        ForEach(this.tools, (tool: string, index: number) => {
-          Text(tool)
-            .fontSize(14)
-            .fontColor(this.currentTool === index ? Color.White : $r('app.color.text_primary'))
-            .padding({ left: 16, right: 16, top: 8, bottom: 8 })
-            .borderRadius(20)
-            .backgroundColor(this.currentTool === index ? $r('app.color.primary') : $r('app.color.chip_background'))
-            .margin({ top: 6, right: 8 })
-            .onClick(() => {
-              this.currentTool = index
-              this.statusText = ''
-            })
-        }, (tool: string, index: number) => `${tool}_${index}`)
+    SegmentedControl({
+      items: IMAGE_TOOL_ITEMS,
+      selectedKey: this.getToolKey(),
+      onSelect: (key: string) => {
+        if (key === 'resize') {
+          this.currentTool = 0
+        } else if (key === 'crop') {
+          this.currentTool = 1
+        } else {
+          this.currentTool = 2
+        }
+        this.statusText = ''
       }
-      .width('100%')
-    }
-    .width('100%')
-    .alignItems(HorizontalAlign.Start)
+    })
   }
 
   @Builder
   FileSection() {
-    Column({ space: 8 }) {
-      Row() {
-        Text('选择图片')
-          .fontSize(16)
-          .fontWeight(FontWeight.Medium)
-        Blank()
-        Button('选择')
-          .height(34)
-          .fontSize(13)
-          .enabled(!this.processing)
-          .onClick(() => this.pickFile())
-      }
-      .width('100%')
-
-      if (this.selectedFile.length > 0) {
-        Row() {
-          Text(FileUtils.getFileName(this.selectedFile))
-            .fontSize(14)
-            .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-            .layoutWeight(1)
-        }
-        .width('100%')
-        .padding({ left: 12, right: 12, top: 10, bottom: 10 })
-        .borderRadius(8)
-        .backgroundColor($r('app.color.card_background'))
-      } else {
-        Column() {
-          Text('点击上方按钮选择一张图片')
-            .fontSize(13)
-            .fontColor($r('app.color.text_secondary'))
-        }
-        .width('100%')
-        .height(80)
-        .justifyContent(FlexAlign.Center)
-        .borderRadius(12)
-        .borderWidth(1)
-        .borderStyle(BorderStyle.Dashed)
-        .borderColor($r('app.color.border'))
-      }
-    }
-    .width('100%')
-    .alignItems(HorizontalAlign.Start)
+    FilePickerPanel({
+      title: '选择图片',
+      description: '选择一张图片进行本地处理',
+      asset: $r('app.media.ui_tool_image_edit'),
+      buttonLabel: '选择图片',
+      selectedName: this.selectedFile.length > 0 ? FileUtils.getFileName(this.selectedFile) : '',
+      isEnabled: !this.processing,
+      onPick: () => this.pickFile()
+    })
   }
 
   @Builder
@@ -142,20 +118,19 @@ struct ImageToolsPage {
       Text('调整尺寸')
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
+        .fontColor($r('app.color.text_primary'))
 
       Row({ space: 12 }) {
-        TextInput({ placeholder: '宽度(px)', text: this.widthText })
-          .type(InputType.Number)
+        MetricInputField({
+          label: '宽度', value: this.widthText, placeholder: '宽度', suffix: 'px', isEnabled: !this.processing,
+          onChange: (value: string) => { this.widthText = value }
+        })
           .layoutWeight(1)
-          .onChange((value: string) => {
-            this.widthText = value
-          })
-        TextInput({ placeholder: '高度(px)', text: this.heightText })
-          .type(InputType.Number)
+        MetricInputField({
+          label: '高度', value: this.heightText, placeholder: '高度', suffix: 'px', isEnabled: !this.processing,
+          onChange: (value: string) => { this.heightText = value }
+        })
           .layoutWeight(1)
-          .onChange((value: string) => {
-            this.heightText = value
-          })
       }
       .width('100%')
 
@@ -170,12 +145,12 @@ struct ImageToolsPage {
       }
       .width('100%')
 
-      Button(this.processing ? '处理中...' : '调整并保存')
-        .width('100%')
-        .height(44)
-        .fontSize(16)
-        .enabled(!this.processing && this.selectedFile.length > 0)
-        .onClick(() => this.doResize())
+      PrimaryActionButton({
+        label: '调整并保存',
+        isEnabled: !this.processing && this.selectedFile.length > 0,
+        loading: this.processing,
+        onTap: () => this.doResize()
+      })
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)
@@ -187,28 +162,33 @@ struct ImageToolsPage {
       Text('裁剪区域')
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
+        .fontColor($r('app.color.text_primary'))
 
       Row({ space: 12 }) {
-        TextInput({ placeholder: 'X起点', text: this.cropX })
-          .type(InputType.Number)
+        MetricInputField({
+          label: 'X 起点', value: this.cropX, placeholder: '0', suffix: 'px', isEnabled: !this.processing,
+          onChange: (value: string) => { this.cropX = value }
+        })
           .layoutWeight(1)
-          .onChange((value: string) => { this.cropX = value })
-        TextInput({ placeholder: 'Y起点', text: this.cropY })
-          .type(InputType.Number)
+        MetricInputField({
+          label: 'Y 起点', value: this.cropY, placeholder: '0', suffix: 'px', isEnabled: !this.processing,
+          onChange: (value: string) => { this.cropY = value }
+        })
           .layoutWeight(1)
-          .onChange((value: string) => { this.cropY = value })
       }
       .width('100%')
 
       Row({ space: 12 }) {
-        TextInput({ placeholder: '宽度(px)', text: this.cropW })
-          .type(InputType.Number)
+        MetricInputField({
+          label: '宽度', value: this.cropW, placeholder: '宽度', suffix: 'px', isEnabled: !this.processing,
+          onChange: (value: string) => { this.cropW = value }
+        })
           .layoutWeight(1)
-          .onChange((value: string) => { this.cropW = value })
-        TextInput({ placeholder: '高度(px)', text: this.cropH })
-          .type(InputType.Number)
+        MetricInputField({
+          label: '高度', value: this.cropH, placeholder: '高度', suffix: 'px', isEnabled: !this.processing,
+          onChange: (value: string) => { this.cropH = value }
+        })
           .layoutWeight(1)
-          .onChange((value: string) => { this.cropH = value })
       }
       .width('100%')
 
@@ -216,12 +196,12 @@ struct ImageToolsPage {
         .fontSize(12)
         .fontColor($r('app.color.text_secondary'))
 
-      Button(this.processing ? '处理中...' : '裁剪并保存')
-        .width('100%')
-        .height(44)
-        .fontSize(16)
-        .enabled(!this.processing && this.selectedFile.length > 0)
-        .onClick(() => this.doCrop())
+      PrimaryActionButton({
+        label: '裁剪并保存',
+        isEnabled: !this.processing && this.selectedFile.length > 0,
+        loading: this.processing,
+        onTap: () => this.doCrop()
+      })
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)
@@ -233,17 +213,18 @@ struct ImageToolsPage {
       Text('提取图片主色调')
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
+        .fontColor($r('app.color.text_primary'))
 
       Text('从图片中央区域采样获取主色调')
         .fontSize(12)
         .fontColor($r('app.color.text_secondary'))
 
-      Button(this.processing ? '提取中...' : '提取颜色')
-        .width('100%')
-        .height(44)
-        .fontSize(16)
-        .enabled(!this.processing && this.selectedFile.length > 0)
-        .onClick(() => this.doColorPick())
+      PrimaryActionButton({
+        label: '提取颜色',
+        isEnabled: !this.processing && this.selectedFile.length > 0,
+        loading: this.processing,
+        onTap: () => this.doColorPick()
+      })
 
       if (this.pickedColor.length > 0) {
         Row({ space: 12 }) {
@@ -258,7 +239,7 @@ struct ImageToolsPage {
             Text(this.pickedColor)
               .fontSize(18)
               .fontWeight(FontWeight.Bold)
-              .fontColor($r('app.color.primary'))
+              .fontColor($r('app.color.brand_primary'))
             Text('中央区域平均颜色')
               .fontSize(12)
               .fontColor($r('app.color.text_secondary'))
@@ -267,8 +248,8 @@ struct ImageToolsPage {
         }
         .width('100%')
         .padding(12)
-        .borderRadius(12)
-        .backgroundColor($r('app.color.card_background'))
+        .borderRadius(UiConstants.CARD_RADIUS)
+        .backgroundColor($r('app.color.surface_primary'))
       }
     }
     .width('100%')
@@ -277,12 +258,22 @@ struct ImageToolsPage {
 
   @Builder
   StatusSection() {
-    if (this.statusText.length > 0 && !this.processing) {
-      Text(this.statusText)
-        .fontSize(13)
-        .fontColor(this.statusText.startsWith('已') ? $r('app.color.success') : $r('app.color.error'))
-        .width('100%')
+    StatusPanel({
+      message: this.statusText,
+      success: this.statusText.startsWith('已'),
+      error: this.statusText.length > 0 && !this.statusText.startsWith('已'),
+      loading: false
+    })
+  }
+
+  private getToolKey(): string {
+    if (this.currentTool === 0) {
+      return 'resize'
     }
+    if (this.currentTool === 1) {
+      return 'crop'
+    }
+    return 'color'
   }
 
   private async pickFile(): Promise<void> {

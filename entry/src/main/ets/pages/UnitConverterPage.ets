@@ -3,7 +3,11 @@
  * 支持重量、长度、温度、面积、体积等常用单位互转
  * 纯离线计算,无网络依赖。
  */
-import { promptAction } from '@kit.ArkUI'
+import { router } from '@kit.ArkUI'
+import { AppPageHeader } from '../components/AppPageHeader'
+import { MetricInputField } from '../components/MetricInputField'
+import { ChipItem, OptionChipGroup } from '../components/OptionChipGroup'
+import { UiConstants } from '../common/UiConstants'
 
 interface UnitCategory {
   name: string
@@ -111,25 +115,37 @@ struct UnitConverterPage {
   @State toIndex: number = 1
   @State inputValue: string = ''
   @State result: string = ''
+  @State categoryColumns: string = '1fr 1fr'
 
   build() {
     Navigation() {
-      Scroll() {
-        Column({ space: 16 }) {
-          this.CategorySection()
-          this.InputSection()
-          this.UnitPickerSection()
-          this.ResultSection()
+      Column() {
+        AppPageHeader({ title: '单位换算器', onBack: () => router.back() })
+          .padding({ left: 4, right: 16 })
+        Scroll() {
+          Column({ space: UiConstants.SECTION_GAP }) {
+            this.CategorySection()
+            this.InputSection()
+            this.UnitPickerSection()
+            this.ResultSection()
+          }
+          .width('100%')
+          .constraintSize({ maxWidth: UiConstants.CONTENT_MAX_WIDTH })
+          .padding({ left: UiConstants.PAGE_PADDING_PHONE, right: UiConstants.PAGE_PADDING_PHONE, bottom: 24 })
         }
         .width('100%')
-        .padding(16)
+        .height('100%')
+        .align(Alignment.Top)
       }
       .width('100%')
       .height('100%')
+      .backgroundColor($r('app.color.page_background'))
+      .onAreaChange((_oldValue: Area, newValue: Area) => {
+        this.updateResponsiveLayout(Number(newValue.width))
+      })
     }
     .mode(NavigationMode.Stack)
-    .title('单位换算器')
-    .titleMode(NavigationTitleMode.Mini)
+    .hideTitleBar(true)
   }
 
   @Builder
@@ -138,24 +154,30 @@ struct UnitConverterPage {
       Text('换算类型')
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
+        .fontColor($r('app.color.text_primary'))
 
-      Flex({ wrap: FlexWrap.Wrap }) {
+      Grid() {
         ForEach(CATEGORIES, (cat: UnitCategory, index: number) => {
-          Text(cat.name)
-            .fontSize(14)
-            .fontColor(this.categoryIndex === index ? Color.White : $r('app.color.text_primary'))
-            .padding({ left: 16, right: 16, top: 6, bottom: 6 })
-            .borderRadius(18)
-            .backgroundColor(this.categoryIndex === index ? $r('app.color.primary') : $r('app.color.chip_background'))
-            .margin({ top: 6, right: 8 })
-            .onClick(() => {
-              this.categoryIndex = index
-              this.fromIndex = 0
-              this.toIndex = 1
-              this.calculate()
-            })
+          GridItem() {
+            Row() {
+              Text(cat.name)
+                .fontSize(14)
+                .fontWeight(this.categoryIndex === index ? FontWeight.Medium : FontWeight.Normal)
+                .fontColor(this.categoryIndex === index ? Color.White : $r('app.color.text_primary'))
+            }
+            .width('100%')
+            .height(52)
+            .justifyContent(FlexAlign.Center)
+            .backgroundColor(this.categoryIndex === index ? $r('app.color.brand_primary') : $r('app.color.surface_primary'))
+            .borderRadius(UiConstants.CONTROL_RADIUS)
+            .border({ width: 1, color: this.categoryIndex === index ? $r('app.color.brand_primary') : $r('app.color.border_subtle') })
+            .onClick(() => this.selectCategory(index))
+          }
         }, (cat: UnitCategory, index: number) => `${cat.name}_${index}`)
       }
+      .columnsTemplate(this.categoryColumns)
+      .columnsGap(10)
+      .rowsGap(10)
       .width('100%')
     }
     .width('100%')
@@ -164,22 +186,17 @@ struct UnitConverterPage {
 
   @Builder
   InputSection() {
-    Column({ space: 8 }) {
-      Text('输入数值')
-        .fontSize(16)
-        .fontWeight(FontWeight.Medium)
-
-      TextInput({ placeholder: '请输入数值', text: this.inputValue })
-        .type(InputType.Number)
-        .width('100%')
-        .height(44)
-        .onChange((value: string) => {
-          this.inputValue = value
-          this.calculate()
-        })
-    }
-    .width('100%')
-    .alignItems(HorizontalAlign.Start)
+    MetricInputField({
+      label: '输入数值',
+      value: this.inputValue,
+      placeholder: '请输入数值',
+      suffix: '',
+      isEnabled: true,
+      onChange: (value: string) => {
+        this.inputValue = value
+        this.calculate()
+      }
+    })
   }
 
   @Builder
@@ -189,22 +206,15 @@ struct UnitConverterPage {
         Text('从')
           .fontSize(14)
           .fontColor($r('app.color.text_secondary'))
-        Flex({ wrap: FlexWrap.Wrap }) {
-          ForEach(this.getCurrentUnits(), (unit: UnitItem, index: number) => {
-            Text(unit.label)
-              .fontSize(13)
-              .fontColor(this.fromIndex === index ? Color.White : $r('app.color.text_primary'))
-              .padding({ left: 12, right: 12, top: 5, bottom: 5 })
-              .borderRadius(16)
-              .backgroundColor(this.fromIndex === index ? $r('app.color.primary') : $r('app.color.chip_background'))
-              .margin({ top: 6, right: 6 })
-              .onClick(() => {
-                this.fromIndex = index
-                this.calculate()
-              })
-          }, (unit: UnitItem, index: number) => `from_${unit.key}_${index}`)
-        }
-        .width('100%')
+        OptionChipGroup({
+          items: this.getUnitChips(),
+          selectedKey: this.getCurrentUnits()[this.fromIndex].key,
+          disabled: false,
+          onSelect: (key: string) => {
+            this.fromIndex = this.findUnitIndex(key)
+            this.calculate()
+          }
+        })
       }
       .width('100%')
       .alignItems(HorizontalAlign.Start)
@@ -213,22 +223,15 @@ struct UnitConverterPage {
         Text('转换为')
           .fontSize(14)
           .fontColor($r('app.color.text_secondary'))
-        Flex({ wrap: FlexWrap.Wrap }) {
-          ForEach(this.getCurrentUnits(), (unit: UnitItem, index: number) => {
-            Text(unit.label)
-              .fontSize(13)
-              .fontColor(this.toIndex === index ? Color.White : $r('app.color.text_primary'))
-              .padding({ left: 12, right: 12, top: 5, bottom: 5 })
-              .borderRadius(16)
-              .backgroundColor(this.toIndex === index ? $r('app.color.primary') : $r('app.color.chip_background'))
-              .margin({ top: 6, right: 6 })
-              .onClick(() => {
-                this.toIndex = index
-                this.calculate()
-              })
-          }, (unit: UnitItem, index: number) => `to_${unit.key}_${index}`)
-        }
-        .width('100%')
+        OptionChipGroup({
+          items: this.getUnitChips(),
+          selectedKey: this.getCurrentUnits()[this.toIndex].key,
+          disabled: false,
+          onSelect: (key: string) => {
+            this.toIndex = this.findUnitIndex(key)
+            this.calculate()
+          }
+        })
       }
       .width('100%')
       .alignItems(HorizontalAlign.Start)
@@ -243,17 +246,18 @@ struct UnitConverterPage {
         Text('换算结果')
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
+          .fontColor($r('app.color.text_primary'))
 
         Row() {
           Text(this.result)
             .fontSize(22)
             .fontWeight(FontWeight.Bold)
-            .fontColor($r('app.color.primary'))
+            .fontColor(this.result.startsWith('请输入') ? $r('app.color.error') : $r('app.color.brand_primary'))
         }
         .width('100%')
         .padding(16)
-        .borderRadius(12)
-        .backgroundColor($r('app.color.card_background'))
+        .borderRadius(UiConstants.CARD_RADIUS)
+        .backgroundColor($r('app.color.surface_primary'))
         .justifyContent(FlexAlign.Center)
       }
       .width('100%')
@@ -263,6 +267,34 @@ struct UnitConverterPage {
 
   private getCurrentUnits(): UnitItem[] {
     return CATEGORIES[this.categoryIndex].units
+  }
+
+  private getUnitChips(): ChipItem[] {
+    return this.getCurrentUnits().map((unit: UnitItem) => {
+      const chip: ChipItem = { key: unit.key, label: unit.label, enabled: true, developing: false }
+      return chip
+    })
+  }
+
+  private findUnitIndex(key: string): number {
+    const units = this.getCurrentUnits()
+    for (let index = 0; index < units.length; index++) {
+      if (units[index].key === key) {
+        return index
+      }
+    }
+    return 0
+  }
+
+  private selectCategory(index: number): void {
+    this.categoryIndex = index
+    this.fromIndex = 0
+    this.toIndex = 1
+    this.calculate()
+  }
+
+  private updateResponsiveLayout(width: number): void {
+    this.categoryColumns = width >= UiConstants.BREAKPOINT_MEDIUM ? '1fr 1fr 1fr 1fr' : '1fr 1fr'
   }
 
   private calculate(): void {

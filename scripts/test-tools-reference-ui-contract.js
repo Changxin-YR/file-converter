@@ -39,4 +39,27 @@ for (const key of ['7z', 'tar.gz', 'rar']) {
 assertIncludes(archive, 'minute < 0 || minute > 59', 'Timezone conversion must retain minute validation')
 assertIncludes(archive, 'saveExtractedFiles', 'ZIP extraction must retain recursive saving')
 
+const unit = page('UnitConverterPage.ets')
+for (const component of ['AppPageHeader', 'MetricInputField', 'OptionChipGroup']) {
+  assertIncludes(unit, component, `UnitConverterPage.ets must use ${component}`)
+}
+for (const responsiveToken of ['Grid()', 'categoryColumns', 'onAreaChange', 'UiConstants.BREAKPOINT_MEDIUM', 'UiConstants.CONTENT_MAX_WIDTH']) {
+  assertIncludes(unit, responsiveToken, `UnitConverterPage.ets must retain responsive token ${responsiveToken}`)
+}
+for (const category of ['重量', '长度', '面积', '体积', '温度', '速度', '时间', '数据存储']) {
+  assertIncludes(unit, `name: '${category}'`, `Unit converter must retain ${category}`)
+}
+assertIncludes(unit, 'convertTemperature', 'Unit converter must retain temperature conversion')
+
+const imageTools = page('ImageToolsPage.ets')
+for (const component of ['AppPageHeader', 'SegmentedControl', 'FilePickerPanel', 'MetricInputField', 'PrimaryActionButton', 'StatusPanel']) {
+  assertIncludes(imageTools, component, `ImageToolsPage.ets must use ${component}`)
+}
+assertIncludes(imageTools, 'UiConstants.CONTENT_MAX_WIDTH', 'Image tools must constrain wide layouts')
+for (const operation of ['doResize', 'doCrop', 'doColorPick']) {
+  assertIncludes(imageTools, operation, `Image tools must retain ${operation}`)
+}
+assertIncludes(imageTools, 'pixelMap.crop', 'Image crop must retain real PixelMap cropping')
+assertIncludes(imageTools, 'readPixelsToBuffer', 'Image color extraction must retain real pixel sampling')
+
 console.log('TOOLS REFERENCE UI CONTRACT PASSED')

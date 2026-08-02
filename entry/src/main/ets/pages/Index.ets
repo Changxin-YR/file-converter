@@ -129,30 +129,52 @@ struct Index {
 
   @Builder
   AboutContent() {
-    Column({ space: 14 }) {
-      Image($r('app.media.app_icon'))
-        .width(88)
-        .height(88)
-        .objectFit(ImageFit.Contain)
-        .margin({ top: 64 })
-      Text('单机离线，数据不出设备')
-        .fontSize(18)
-        .fontWeight(FontWeight.Bold)
-        .fontColor($r('app.color.text_primary'))
-      Text('所有格式转换均在设备本地完成，不上传、不收集、不存储您的文件。')
-        .fontSize(14)
-        .fontColor($r('app.color.text_secondary'))
-        .textAlign(TextAlign.Center)
-        .lineHeight(22)
-        .constraintSize({ maxWidth: 520 })
-        .padding({ left: 24, right: 24 })
-      Text('版本 1.0.0 · HarmonyOS API 22')
-        .fontSize(12)
-        .fontColor($r('app.color.text_tertiary'))
+    Scroll() {
+      Column({ space: 14 }) {
+        Image($r('app.media.app_icon'))
+          .width(104)
+          .height(104)
+          .objectFit(ImageFit.Contain)
+          .margin({ top: 48 })
+        Text($r('app.string.app_name'))
+          .fontSize(24)
+          .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
+        Text('单机离线，数据不出设备')
+          .fontSize(17)
+          .fontWeight(FontWeight.Medium)
+          .fontColor($r('app.color.brand_primary'))
+        Column({ space: 10 }) {
+          Text('文件只在设备本地处理')
+            .fontSize(14)
+            .fontColor($r('app.color.text_primary'))
+          Text('不联网、无后端、不上传')
+            .fontSize(14)
+            .fontColor($r('app.color.text_primary'))
+          Text('不收集、不存储用户文件')
+            .fontSize(14)
+            .fontColor($r('app.color.text_primary'))
+          Text('仅在使用时访问所选文件')
+            .fontSize(14)
+            .fontColor($r('app.color.text_primary'))
+        }
+        .width('100%')
+        .padding(18)
+        .backgroundColor($r('app.color.surface_primary'))
+        .borderRadius(UiConstants.CARD_RADIUS)
+        Text('版本 1.0.0 · HarmonyOS API 22 · 6.0.2')
+          .fontSize(12)
+          .fontColor($r('app.color.text_tertiary'))
+          .margin({ top: 8 })
+      }
+      .width('100%')
+      .constraintSize({ maxWidth: UiConstants.CONTENT_MAX_WIDTH })
+      .padding({ left: this.pagePadding, right: this.pagePadding, bottom: 24 })
+      .alignItems(HorizontalAlign.Center)
     }
     .width('100%')
     .height('100%')
-    .alignItems(HorizontalAlign.Center)
+    .align(Alignment.Top)
   }
 
   @Builder

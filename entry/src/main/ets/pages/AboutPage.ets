@@ -1,80 +1,81 @@
-/**
- * 关于页
- * 应用信息与隐私声明（单机离线、无后端）。
- */
+import { router } from '@kit.ArkUI'
+import { AppPageHeader } from '../components/AppPageHeader'
+import { UiConstants } from '../common/UiConstants'
+
 @Entry
 @Component
 struct AboutPage {
   build() {
     Navigation() {
-      Scroll() {
-        Column({ space: 16 }) {
-          Text('🔒')
-            .fontSize(56)
-            .margin({ top: 40 })
-
-          Text($r('app.string.app_name'))
-            .fontSize(22)
-            .fontWeight(FontWeight.Bold)
-
-          Text('版本 1.0.0')
-            .fontSize(14)
-            .fontColor($r('app.color.text_secondary'))
-
-          Column({ space: 8 }) {
-            Text('隐私声明')
+      Column() {
+        AppPageHeader({ title: '关于', onBack: () => router.back() })
+          .padding({ left: 4, right: 16 })
+        Scroll() {
+          Column({ space: 18 }) {
+            Image($r('app.media.app_icon'))
+              .width(112)
+              .height(112)
+              .objectFit(ImageFit.Contain)
+              .margin({ top: 24 })
+            Text($r('app.string.app_name'))
+              .fontSize(24)
+              .fontWeight(FontWeight.Bold)
+              .fontColor($r('app.color.text_primary'))
+            Text('单机离线，数据不出设备')
               .fontSize(16)
               .fontWeight(FontWeight.Medium)
-
-            Text('本应用为单机离线应用:\n· 不联网、无后端、不上传任何数据\n· 所有格式转换在设备本地完成\n· 不收集、不存储您的个人文件\n· 权限最小化,仅在使用时访问所选文件')
-              .fontSize(14)
-              .lineHeight(24)
-              .fontColor($r('app.color.text_primary'))
+              .fontColor($r('app.color.brand_primary'))
+            this.PrivacySection()
+            Text('版本 1.0.0 · HarmonyOS API 22 · 6.0.2')
+              .fontSize(12)
+              .fontColor($r('app.color.text_tertiary'))
+              .margin({ top: 8 })
           }
           .width('100%')
-          .padding(16)
-          .borderRadius(12)
-          .backgroundColor($r('app.color.card_background'))
-          .margin({ top: 8 })
-          .alignItems(HorizontalAlign.Start)
-
-          Column({ space: 8 }) {
-            Text('开发者信息')
-              .fontSize(16)
-              .fontWeight(FontWeight.Medium)
-
-            Text('开发者: MaxTools Studio')
-              .fontSize(14)
-              .fontColor($r('app.color.text_primary'))
-            Text('联系邮箱: support@maxtools.com')
-              .fontSize(14)
-              .fontColor($r('app.color.text_primary'))
-            Text('隐私政策: https://maxtools.com/privacy')
-              .fontSize(14)
-              .fontColor($r('app.color.primary'))
-              .decoration({ type: TextDecorationType.Underline })
-          }
-          .width('100%')
-          .padding(16)
-          .borderRadius(12)
-          .backgroundColor($r('app.color.card_background'))
-          .margin({ top: 8 })
-          .alignItems(HorizontalAlign.Start)
-
-          Text('HarmonyOS API 22 · 6.0.2')
-            .fontSize(12)
-            .fontColor($r('app.color.text_tertiary'))
-            .margin({ top: 8 })
+          .constraintSize({ maxWidth: UiConstants.CONTENT_MAX_WIDTH })
+          .padding({ left: UiConstants.PAGE_PADDING_PHONE, right: UiConstants.PAGE_PADDING_PHONE, bottom: 24 })
+          .alignItems(HorizontalAlign.Center)
         }
         .width('100%')
-        .padding(20)
-        .alignItems(HorizontalAlign.Center)
+        .height('100%')
+        .align(Alignment.Top)
       }
       .width('100%')
       .height('100%')
+      .backgroundColor($r('app.color.page_background'))
     }
     .mode(NavigationMode.Stack)
-    .title('关于')
-    .titleMode(NavigationTitleMode.Mini)
+    .hideTitleBar(true)
+  }
+
+  @Builder
+  PrivacySection() {
+    Column({ space: 0 }) {
+      this.PrivacyRow('文件只在设备本地处理')
+      this.PrivacyRow('不联网、无后端、不上传')
+      this.PrivacyRow('不收集、不存储用户文件')
+      this.PrivacyRow('仅在使用时访问所选文件')
+    }
+    .width('100%')
+    .backgroundColor($r('app.color.surface_primary'))
+    .borderRadius(UiConstants.CARD_RADIUS)
+  }
+
+  @Builder
+  PrivacyRow(label: string) {
+    Row({ space: 12 }) {
+      Text('✓')
+        .fontSize(16)
+        .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.success'))
+      Text(label)
+        .fontSize(14)
+        .fontColor($r('app.color.text_primary'))
+        .layoutWeight(1)
+    }
+    .width('100%')
+    .constraintSize({ minHeight: UiConstants.TOUCH_MIN_HEIGHT })
+    .padding({ left: 16, right: 16, top: 12, bottom: 12 })
+    .border({ width: { bottom: 1 }, color: $r('app.color.border_subtle') })
   }
 }

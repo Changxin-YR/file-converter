@@ -1,6 +1,6 @@
 /**
  * PDF 工具箱页面
- * 提供 PDF 合并、拆分、压缩、格式转换、水印、加密、页码、旋转等功能
+ * 提供图片/文本/HTML 转 PDF 及受限的 PDF 文本导出功能。
  * 纯离线实现,不依赖网络。
  */
 import { common } from '@kit.AbilityKit'

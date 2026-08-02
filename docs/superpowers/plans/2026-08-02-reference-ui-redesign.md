@@ -523,9 +523,9 @@ If `origin/master` changed after the baseline fetch, run `git rebase origin/mast
 Run:
 
 ```powershell
-git push origin master
+git push origin HEAD:master
 git status --short
 git log -1 --oneline
 ```
 
-Expected: ordinary fast-forward push succeeds, the working tree contains no unintended staged changes, and the final commit hash is reported to the user. If authentication is unavailable, stop after the local commit and report the exact authentication blocker without exposing credentials.
+Expected: the current feature branch is pushed to `master` by ordinary fast-forward, the working tree contains no unintended staged changes, and the final commit hash is reported to the user. If authentication is unavailable, stop after the local commit and report the exact authentication blocker without exposing credentials.

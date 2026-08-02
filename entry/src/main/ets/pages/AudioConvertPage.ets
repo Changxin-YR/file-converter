@@ -4,7 +4,7 @@
  */
 import { common } from '@kit.AbilityKit'
 import { BusinessError } from '@kit.BasicServicesKit'
-import { promptAction } from '@kit.ArkUI'
+import { promptAction, router } from '@kit.ArkUI'
 import { fileIo as fs } from '@kit.CoreFileKit'
 import { FilePickerService } from '../services/FilePickerService'
 import { SaveService } from '../services/SaveService'
@@ -16,6 +16,11 @@ import { FileUtils } from '../common/Utils'
 import { FormatSelector } from '../components/FormatSelector'
 import { ConvertProgressBar } from '../components/ConvertProgressBar'
 import { ConvertResultList } from '../components/ConvertResultList'
+import { AppPageHeader } from '../components/AppPageHeader'
+import { FilePickerPanel } from '../components/FilePickerPanel'
+import { PrimaryActionButton } from '../components/PrimaryActionButton'
+import { StatusPanel } from '../components/StatusPanel'
+import { UiConstants } from '../common/UiConstants'
 
 @Entry
 @Component
@@ -40,77 +45,43 @@ struct AudioConvertPage {
 
   build() {
     Navigation() {
-      Scroll() {
-        Column({ space: 16 }) {
-          this.FileSection()
-          this.FormatSection()
-          this.ParamSection()
-          this.ActionSection()
+      Column() {
+        AppPageHeader({ title: '音频格式转换', onBack: () => router.back() })
+          .padding({ left: 4, right: 16 })
+        Scroll() {
+          Column({ space: UiConstants.SECTION_GAP }) {
+            this.FileSection()
+            this.FormatSection()
+            this.ParamSection()
+            this.ActionSection()
+          }
+          .width('100%')
+          .constraintSize({ maxWidth: UiConstants.CONTENT_MAX_WIDTH })
+          .padding({ left: UiConstants.PAGE_PADDING_PHONE, right: UiConstants.PAGE_PADDING_PHONE, bottom: 24 })
         }
         .width('100%')
-        .padding(16)
+        .height('100%')
+        .align(Alignment.Top)
       }
       .width('100%')
       .height('100%')
+      .backgroundColor($r('app.color.page_background'))
     }
     .mode(NavigationMode.Stack)
-    .title('音频格式转换')
-    .titleMode(NavigationTitleMode.Mini)
+    .hideTitleBar(true)
   }
 
   @Builder
   FileSection() {
-    Column({ space: 8 }) {
-      Row() {
-        Text('选择音频')
-          .fontSize(16)
-          .fontWeight(FontWeight.Medium)
-        Blank()
-        Button('选择音频')
-          .height(34)
-          .fontSize(13)
-          .enabled(!this.converting)
-          .onClick(() => this.pickFiles())
-      }
-      .width('100%')
-
-      if (this.selectedFiles.length > 0) {
-        ForEach(this.selectedFiles, (file: string) => {
-          Row() {
-            Text(FileUtils.getFileName(file))
-              .fontSize(14)
-              .maxLines(1)
-              .textOverflow({ overflow: TextOverflow.Ellipsis })
-              .layoutWeight(1)
-            Text(`.${FileUtils.getExtension(file)}`)
-              .fontSize(12)
-              .fontColor($r('app.color.text_secondary'))
-          }
-          .width('100%')
-          .padding({ left: 12, right: 12, top: 10, bottom: 10 })
-          .borderRadius(8)
-          .backgroundColor($r('app.color.card_background'))
-        }, (file: string) => file)
-      } else {
-        Column() {
-          Text('🎵')
-            .fontSize(40)
-          Text('点击上方按钮选择音频文件')
-            .fontSize(13)
-            .fontColor($r('app.color.text_secondary'))
-            .margin({ top: 8 })
-        }
-        .width('100%')
-        .height(140)
-        .justifyContent(FlexAlign.Center)
-        .borderRadius(12)
-        .borderWidth(1)
-        .borderStyle(BorderStyle.Dashed)
-        .borderColor($r('app.color.border'))
-      }
-    }
-    .width('100%')
-    .alignItems(HorizontalAlign.Start)
+    FilePickerPanel({
+      title: '选择音频',
+      description: '支持 16-bit PCM WAV 转换为 M4A',
+      asset: $r('app.media.ui_tool_audio'),
+      buttonLabel: '选择音频',
+      selectedName: this.selectedFileSummary(),
+      isEnabled: !this.converting,
+      onPick: () => this.pickFiles()
+    })
   }
 
   @Builder
@@ -129,7 +100,7 @@ struct AudioConvertPage {
         }
       })
 
-      Text('FLAC/WAV/OGG 路径需真机验证编码器,暂不可选')
+      Text('当前仅支持 16-bit PCM WAV 转为 M4A，其余输出功能正在开发')
         .fontSize(12)
         .fontColor($r('app.color.text_secondary'))
     }
@@ -151,9 +122,12 @@ struct AudioConvertPage {
               .fontColor(this.bitrateIndex === index ? Color.White : $r('app.color.text_primary'))
               .padding({ left: 16, right: 16, top: 6, bottom: 6 })
               .borderRadius(18)
-              .backgroundColor(this.bitrateIndex === index ? $r('app.color.primary') : $r('app.color.chip_background'))
+              .backgroundColor(this.bitrateIndex === index ? $r('app.color.brand_primary') : $r('app.color.control_selected'))
               .margin({ top: 6, right: 8 })
               .onClick(() => {
+                if (this.converting) {
+                  return
+                }
                 this.bitrateIndex = index
               })
           }, (bitrate: number, index: number) => `${bitrate}_${index}`)
@@ -183,22 +157,23 @@ struct AudioConvertPage {
   @Builder
   ActionSection() {
     Column({ space: 12 }) {
-      Button(this.converting ? '转换中...' : '开始转换')
-        .width('100%')
-        .height(44)
-        .fontSize(16)
-        .enabled(!this.converting && this.selectedFiles.length > 0)
-        .onClick(() => this.startConvert())
+      PrimaryActionButton({
+        label: '开始转换',
+        isEnabled: !this.converting && this.selectedFiles.length > 0,
+        loading: this.converting,
+        onTap: () => this.startConvert()
+      })
 
       if (this.converting) {
         ConvertProgressBar({ progress: this.progress, total: 100, showText: true })
       }
 
-      if (this.statusText.length > 0 && !this.converting) {
-        Text(this.statusText)
-          .fontSize(13)
-          .fontColor($r('app.color.error'))
-      }
+      StatusPanel({
+        message: this.statusText,
+        success: this.results.length > 0,
+        error: this.statusText.length > 0 && this.results.length === 0,
+        loading: false
+      })
 
       if (this.results.length > 0) {
         Text(`转换完成 ${this.results.length} 个文件`)
@@ -208,15 +183,25 @@ struct AudioConvertPage {
 
         ConvertResultList({ results: this.results })
 
-        Button('保存到指定位置')
-          .width('100%')
-          .height(40)
-          .fontSize(15)
-          .type(ButtonType.Normal)
-          .onClick(() => this.saveResults())
+        PrimaryActionButton({
+          label: '保存到指定位置',
+          isEnabled: !this.converting,
+          loading: false,
+          onTap: () => this.saveResults()
+        })
       }
     }
     .width('100%')
+  }
+
+  private selectedFileSummary(): string {
+    if (this.selectedFiles.length === 0) {
+      return ''
+    }
+    if (this.selectedFiles.length === 1) {
+      return FileUtils.getFileName(this.selectedFiles[0])
+    }
+    return `${FileUtils.getFileName(this.selectedFiles[0])} 等 ${this.selectedFiles.length} 个文件`
   }
 
   private async pickFiles(): Promise<void> {

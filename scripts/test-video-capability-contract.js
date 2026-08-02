@@ -25,7 +25,7 @@ assert(
   'Only MP4 and M4A may enter the video conversion paths'
 )
 assert(
-  indexSource.includes('视频转 MP4 / 提取 M4A') && !indexSource.includes('提取 MP3'),
+  indexSource.includes('MOV 转 MP4 / 提取 M4A') && !indexSource.includes('提取 MP3'),
   'The home page must advertise verified M4A extraction without claiming MP3 support'
 )
 assert(

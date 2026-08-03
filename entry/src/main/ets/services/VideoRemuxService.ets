@@ -15,7 +15,7 @@ export class VideoRemuxService {
     let success = false
     try {
       sourceFile = fs.openSync(sourceUri, fs.OpenMode.READ_ONLY)
-      const sourceSize: number = fs.statSync(sourceUri).size
+      const sourceSize: number = fs.statSync(sourceFile.fd).size
       targetFile = fs.openSync(targetPath,
         fs.OpenMode.CREATE | fs.OpenMode.TRUNC | fs.OpenMode.READ_WRITE)
       await nativeAudio.remuxMovToMp4(sourceFile.fd, sourceSize, targetFile.fd)

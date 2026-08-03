@@ -36,5 +36,17 @@ assert(
   /finally\s*\{[\s\S]*?transcoder[\s\S]*?release\(\)/.test(source),
   'The transcoder must be released when prepare or start fails'
 )
+assert(
+  !source.includes('statSync(sourceUri)') && source.includes('statSync(sourceFile.fd)'),
+  'Picker URIs must be opened before the video transcoder reads source size'
+)
+assert(
+  /if \(!FileUtils\.copyFile\(targetPath, saveUri\)\)[\s\S]*?throw new Error/.test(source),
+  'video save copy failures must not be counted as success'
+)
+assert(
+  /finally\s*\{[\s\S]*?fs\.unlinkSync\(targetPath\)/.test(source),
+  'video sandbox outputs must be cleaned after success, cancellation, or failure'
+)
 
 console.log('VIDEO CAPABILITY CONTRACT PASSED')

@@ -406,7 +406,7 @@ struct PdfToolsPage {
   private async doPdfToText(targetExt: string): Promise<void> {
     for (const uri of this.selectedFiles) {
       const file = fs.openSync(uri, fs.OpenMode.READ_ONLY)
-      let rawText = ''
+      let extracted: PdfTextExtractResult = { success: false, text: '', errorMsg: 'PDF 文本提取失败' }
       try {
         const stat = fs.statSync(file.fd)
         if (stat.size > 20 * 1024 * 1024) {
@@ -415,11 +415,10 @@ struct PdfToolsPage {
         }
         const buffer = new ArrayBuffer(stat.size)
         const bytesRead = fs.readSync(file.fd, buffer)
-        rawText = TextCodec.decode(buffer.slice(0, bytesRead), 'utf-8')
+        extracted = PdfTextExtractor.extract(buffer.slice(0, bytesRead))
       } finally {
         fs.closeSync(file)
       }
-      const extracted: PdfTextExtractResult = PdfTextExtractor.extract(rawText)
       if (!extracted.success) {
         throw new Error(extracted.errorMsg ?? 'PDF 文本提取失败')
       }

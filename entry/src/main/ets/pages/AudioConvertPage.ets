@@ -233,6 +233,8 @@ struct AudioConvertPage {
 
     const context = getContext(this) as common.UIAbilityContext
     const total = this.selectedFiles.length
+    let skippedCount = 0
+    let failedCount = 0
     const options: ConvertOptions = {
       audioBitrate: AudioPreset.BITRATES[this.bitrateIndex]
     }
@@ -241,6 +243,8 @@ struct AudioConvertPage {
       const uri: string = this.selectedFiles[i]
       const srcExt: string = FileUtils.getExtension(uri)
       if (srcExt === this.targetFormat) {
+        skippedCount++
+        this.progress = Math.round((i + 1) / total * 100)
         continue
       }
       const baseName: string = FileUtils.getBaseName(uri)
@@ -265,6 +269,7 @@ struct AudioConvertPage {
       if (result.success && result.targetPath) {
         this.results = [...this.results, result.targetPath]
       } else {
+        failedCount++
         this.statusText = `第 ${i + 1} 个文件失败:${result.errorMsg ?? '未知错误'}`
       }
       this.progress = Math.round((i + 1) / total * 100)
@@ -272,7 +277,15 @@ struct AudioConvertPage {
 
     this.converting = false
     if (this.results.length > 0) {
-      promptAction.showToast({ message: `转换完成 ${this.results.length} 个文件` })
+      let summary = `已转换 ${this.results.length} 个文件`
+      if (skippedCount > 0) {
+        summary += `,跳过 ${skippedCount} 个同格式文件`
+      }
+      if (failedCount > 0) {
+        summary += `,${failedCount} 个失败`
+      }
+      this.statusText = summary
+      promptAction.showToast({ message: this.statusText })
     } else {
       this.statusText = this.statusText.length > 0 ? this.statusText : '所选文件无需转换'
     }

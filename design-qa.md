@@ -145,3 +145,11 @@
 - `passed`：21 个自动契约、28 个 ArkTS 文件类型检查、标准门禁和 HarmonyOS 完整构建通过。
 - `boundary`：系统会对桌面图标施加设备形态遮罩；发布签名和商店材料不属于图片资源替换范围，当前仍生成 unsigned HAP。
 - 完整证据：`docs/qa/2026-08-03-app-icon-replacement.md`。
+
+## 2026-08-03 测试报告合理建议修复
+
+- `passed`：PDF 原始字节输入、文档单次批量保存、三个视频 fd 状态读取和音频跳过进度均先由失败契约复现，再完成最小修复。
+- `passed`：23 个自动契约、标准门禁和 HarmonyOS Native/ArkTS 完整构建；phone 与 2in1 均安装最新 unsigned HAP。
+- `passed`：phone 启动后布局树确认前台为 `com.maxtools.formatconverter/pages/Index`，点击文档卡后进入 `pages/DocumentConvertPage`。
+- `blocked`：phone 文档页点击“选择文件”后系统 Picker 未进入前台，布局树切回其他已安装应用，无法完成真实多文件选择与单次批量保存闭环；不以契约测试替代该设备证据。
+- 完整证据：`docs/qa/2026-08-03-test-report-remediation.md`。

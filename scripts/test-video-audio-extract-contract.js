@@ -9,6 +9,10 @@ const declarations = fs.readFileSync(
   'utf8'
 )
 const page = fs.readFileSync(path.join(root, 'entry', 'src', 'main', 'ets', 'pages', 'VideoConvertPage.ets'), 'utf8')
+const service = fs.readFileSync(
+  path.join(root, 'entry', 'src', 'main', 'ets', 'services', 'VideoAudioExtractService.ets'),
+  'utf8'
+)
 
 function assert(condition, message) {
   if (!condition) {
@@ -43,6 +47,10 @@ assert(
 assert(
   page.includes('VideoAudioExtractService') && page.includes("this.targetFormat === 'm4a'"),
   'The M4A branch must call the dedicated extraction service'
+)
+assert(
+  !service.includes('statSync(sourceUri)') && service.includes('statSync(sourceFile.fd)'),
+  'M4A extraction must stat the opened picker file descriptor'
 )
 
 console.log('VIDEO AUDIO EXTRACT CONTRACT PASSED')

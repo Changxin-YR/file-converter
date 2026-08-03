@@ -30,6 +30,12 @@ const DOC_SOURCE_SUFFIXES: string[] = ['.txt', '.csv', '.json', '.xml', '.html',
 
 const SOURCE_ENCODINGS: string[] = ['utf-8', 'gbk', 'utf-16le']
 
+interface PendingDocumentOutput {
+  fileName: string
+  tempPath: string
+  sourceIndex: number
+}
+
 @Entry
 @Component
 struct DocumentConvertPage {
@@ -213,41 +219,79 @@ struct DocumentConvertPage {
     this.statusText = ''
     this.successCount = 0
 
+    const context = getContext(this) as common.UIAbilityContext
     const total = this.selectedFiles.length
+    const pendingOutputs: PendingDocumentOutput[] = []
+    let failedCount = 0
 
-    for (let i = 0; i < total; i++) {
-      const uri: string = this.selectedFiles[i]
-      const srcExt: string = FileUtils.getExtension(uri)
-      const baseName: string = FileUtils.getBaseName(uri)
+    try {
+      for (let i = 0; i < total; i++) {
+        const uri: string = this.selectedFiles[i]
+        const srcExt: string = FileUtils.getExtension(uri)
+        const baseName: string = FileUtils.getBaseName(uri)
 
-      try {
-        // 1. 读取源文件为文本 (UTF-8)
-        const text = await this.readFileAsText(uri)
-        this.progress = Math.round((i + 0.3) / total * 100)
+        try {
+          const text = await this.readFileAsText(uri)
+          this.progress = Math.round((i + 0.3) / total * 60)
 
-        // 2. 转换为目标格式内容
-        const converted = this.convertContent(text, srcExt, this.targetFormat)
-        if (converted === null) {
-          this.statusText = `第 ${i + 1} 个文件不支持转为 ${this.targetFormat.toUpperCase()}`
-          continue
+          const converted = this.convertContent(text, srcExt, this.targetFormat)
+          if (converted === null) {
+            failedCount++
+            this.statusText = `第 ${i + 1} 个文件不支持转为 ${this.targetFormat.toUpperCase()}`
+            this.progress = Math.round((i + 1) / total * 60)
+            continue
+          }
+
+          const fileName = `${baseName}.${this.targetFormat}`
+          const tempPath = `${context.cacheDir}/${FileUtils.genTaskId()}.${this.targetFormat}`
+          try {
+            this.writeContent(tempPath, converted)
+          } catch (e) {
+            try { fs.unlinkSync(tempPath) } catch (_cleanupError) {}
+            const writeError = e as BusinessError
+            throw new Error(writeError.message)
+          }
+          pendingOutputs.push({ fileName: fileName, tempPath: tempPath, sourceIndex: i })
+        } catch (e) {
+          failedCount++
+          const err = e as BusinessError
+          this.statusText = `第 ${i + 1} 个文件失败:${err.message}`
         }
-        this.progress = Math.round((i + 0.6) / total * 100)
-
-        // 3. 保存文件
-        const fileName = `${baseName}.${this.targetFormat}`
-        const targetUri: string = await this.saveService.getSavePath(fileName)
-        this.writeContent(targetUri, converted)
-        this.successCount++
-        this.progress = Math.round((i + 1) / total * 100)
-      } catch (e) {
-        const err = e as BusinessError
-        this.statusText = `第 ${i + 1} 个文件失败:${err.message}`
+        this.progress = Math.round((i + 1) / total * 60)
       }
+
+      if (pendingOutputs.length > 0) {
+        const fileNames: string[] = []
+        for (const output of pendingOutputs) {
+          fileNames.push(output.fileName)
+        }
+        const targetUris: string[] = await this.saveService.getSavePaths(fileNames)
+        for (let i = 0; i < pendingOutputs.length; i++) {
+          const output = pendingOutputs[i]
+          if (FileUtils.copyFile(output.tempPath, targetUris[i])) {
+            this.successCount++
+          } else {
+            failedCount++
+            try { fs.unlinkSync(targetUris[i]) } catch (_cleanupError) {}
+            this.statusText = `第 ${output.sourceIndex + 1} 个文件保存失败`
+          }
+          this.progress = 60 + Math.round((i + 1) / pendingOutputs.length * 40)
+        }
+      }
+    } catch (e) {
+      const err = e as BusinessError
+      this.statusText = `批量保存未完成:${err.message}`
+    } finally {
+      for (const output of pendingOutputs) {
+        try { fs.unlinkSync(output.tempPath) } catch (_e) {}
+      }
+      this.converting = false
     }
 
-    this.converting = false
     if (this.successCount > 0) {
-      this.statusText = `已成功转换并保存 ${this.successCount} 个文件`
+      this.statusText = failedCount > 0 ?
+        `已保存 ${this.successCount} 个文件,${failedCount} 个失败` :
+        `已成功转换并保存 ${this.successCount} 个文件`
       promptAction.showToast({ message: `已保存 ${this.successCount} 个文件` })
     } else if (this.statusText.length === 0) {
       this.statusText = '转换失败'

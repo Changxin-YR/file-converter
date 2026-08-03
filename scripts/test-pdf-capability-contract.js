@@ -32,6 +32,15 @@ assert(
   source.includes('PdfTextExtractor.extract') && !source.includes("'(无法提取文本内容)'"),
   'PDF reverse conversion must use the strict extractor and never emit placeholder text'
 )
+const reverseMethod = source.slice(source.indexOf('private async doPdfToText'))
+assert(
+  /PdfTextExtractor\.extract\(buffer\.slice\(0, bytesRead\)\)/.test(reverseMethod),
+  'PDF reverse conversion must pass the actual bytes read directly to the extractor'
+)
+assert(
+  !/TextCodec\.decode/.test(reverseMethod),
+  'PDF reverse conversion must not decode binary PDF bytes as UTF-8 text'
+)
 assert(
   indexSource.includes('文本PDF导出'),
   'The home page must describe the limited verified reverse conversion'

@@ -35,5 +35,9 @@ assert(
   /srcExt\s*===\s*'mov'[\s\S]*?videoRemuxService\.remux/.test(page),
   'The video page must try deterministic MOV remuxing before encoder-based transcoding'
 )
+assert(
+  !service.includes('statSync(sourceUri)') && service.includes('statSync(sourceFile.fd)'),
+  'MOV remuxing must stat the opened picker file descriptor'
+)
 
 console.log('VIDEO REMUX CONTRACT PASSED')

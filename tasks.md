@@ -297,3 +297,21 @@
 - [x] 在 phone 与 2in1 安装验证并回填 QA 证据。
 
 完成证据：`docs/qa/2026-08-03-app-icon-replacement.md`。三处资源统一为 1024x1024 RGBA PNG；phone 与 2in1 均安装同一 HAP 并确认关于页及系统桌面/任务栏图标更新。
+
+### T-20260803-004 测试报告合理建议修复
+
+- 状态：`done`
+- 目标：修复 PDF 原始字节输入、文档批量保存、Picker URI 文件状态读取和音频跳过进度问题，同时保持既有离线能力边界。
+- 范围：PDF 提取器与页面、文档页与保存服务、三个视频输入入口、音频页反馈、自动契约、设计/开发文档和 QA 证据。
+
+检查项：
+
+- [x] PDF 提取器直接接收实际读取的 `ArrayBuffer`，继续严格拒绝超出支持范围的 PDF。
+- [x] 文档批量转换只弹出一次系统保存对话框，并统一清理沙箱临时结果。
+- [x] 视频普通转码、MOV 重封装和 MP4 音轨提取均通过已打开 fd 获取源文件大小。
+- [x] 音频同格式跳过时更新进度并提供明确结果反馈。
+- [x] 通过全部自动契约、ArkTS 类型检查、静态门禁和 HarmonyOS 构建。
+- [x] 回填 `design.md`、`docs/开发文档.md`、`changes.md`、`design-qa.md` 与专项 QA 证据。
+
+设计依据：`docs/superpowers/specs/2026-08-03-test-report-remediation-design.md`。
+完成证据：`docs/qa/2026-08-03-test-report-remediation.md`。phone 的系统 DocumentViewPicker 前台跳转仍为设备环境阻塞，不影响代码、契约和完整构建结论。

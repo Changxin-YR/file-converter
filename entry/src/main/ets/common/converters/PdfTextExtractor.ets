@@ -11,7 +11,8 @@ interface LiteralDecodeResult {
 }
 
 export class PdfTextExtractor {
-  static extract(raw: string): PdfTextExtractResult {
+  static extract(buffer: ArrayBuffer): PdfTextExtractResult {
+    const raw = PdfTextExtractor.toBinaryString(buffer)
     if (!raw.startsWith('%PDF-')) {
       return { success: false, text: '', errorMsg: '文件不是有效的 PDF' }
     }
@@ -36,6 +37,21 @@ export class PdfTextExtractor {
       return { success: false, text: '', errorMsg: 'PDF 中没有可提取的文本内容' }
     }
     return { success: true, text: parts.join('\n') }
+  }
+
+  private static toBinaryString(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer)
+    const chunks: string[] = []
+    const chunkSize = 8192
+    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+      const end = Math.min(offset + chunkSize, bytes.length)
+      let chunk = ''
+      for (let index = offset; index < end; index++) {
+        chunk += String.fromCharCode(bytes[index])
+      }
+      chunks.push(chunk)
+    }
+    return chunks.join('')
   }
 
   private static extractBlock(block: string, parts: string[]): void {

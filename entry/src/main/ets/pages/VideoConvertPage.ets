@@ -196,8 +196,8 @@ struct VideoConvertPage {
         continue
       }
 
+      const targetPath = `${context.filesDir}/${baseName}.${this.targetFormat}`
       try {
-        const targetPath = `${context.filesDir}/${baseName}.${this.targetFormat}`
         if (this.targetFormat === 'm4a') {
           const result: ConvertResult = await this.audioExtractService.extract(uri, targetPath)
           if (!result.success) {
@@ -213,14 +213,16 @@ struct VideoConvertPage {
         }
         const fileName = `${baseName}.${this.targetFormat}`
         const saveUri: string = await this.saveService.getSavePath(fileName)
-        FileUtils.copyFile(targetPath, saveUri)
-        // 清理临时文件
-        try { fs.unlinkSync(targetPath) } catch (_e) {}
+        if (!FileUtils.copyFile(targetPath, saveUri)) {
+          throw new Error('保存视频文件失败')
+        }
         this.successCount++
         this.progress = Math.round((i + 1) / total * 100)
       } catch (e) {
         const err = e as BusinessError
         this.statusText = `第 ${i + 1} 个文件失败:${err.message}`
+      } finally {
+        try { fs.unlinkSync(targetPath) } catch (_e) {}
       }
     }
 
@@ -235,7 +237,7 @@ struct VideoConvertPage {
 
   private async transcodeVideo(sourceUri: string, targetPath: string): Promise<void> {
     const sourceFile = fs.openSync(sourceUri, fs.OpenMode.READ_ONLY)
-    const srcStat = fs.statSync(sourceUri)
+    const srcStat = fs.statSync(sourceFile.fd)
     const outFile = fs.openSync(targetPath, fs.OpenMode.CREATE | fs.OpenMode.TRUNC | fs.OpenMode.READ_WRITE)
     let transcoder: media.AVTranscoder | null = null
 

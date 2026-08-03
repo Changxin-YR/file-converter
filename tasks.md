@@ -249,3 +249,19 @@
 设计依据：`docs/superpowers/specs/2026-08-02-reference-ui-redesign-design.md`。
 
 当前证据：`docs/qa/2026-08-02-reference-ui-regression.md`。19 个自动契约、28 文件类型检查、标准门禁和 HarmonyOS 构建通过；待 2in1 恢复后补齐最终包全页面截图与交互回归才能改为 `done`。独立 tablet、发布签名/主体材料及未集成离线引擎继续作为明确边界。
+
+### T-20260803-001 主工作区 UI 版本错位修复
+
+- 状态：`done`
+- 根因：DevEco 打开的项目根目录仍位于旧分支 `codex/project-import`（`d80645a`），而参考 UI 已提交到 `master`（`3c67edf`）；模拟器因此被旧根目录构建产物覆盖。
+- 修复：将项目根目录切换到跟踪 `origin/master` 的本地 `master`，从根目录重新构建并覆盖安装到 phone 与 2in1。
+
+检查项：
+
+- [x] 修复前确认根目录 HEAD 与 `origin/master` 不一致。
+- [x] 仅在确认旧 HEAD 为新版祖先后快进本地 `master`，不覆盖用户修改。
+- [x] 通过 19 个自动契约、28 文件类型检查、标准门禁和 HarmonyOS 构建。
+- [x] 在 phone 与 2in1 安装同一 HAP，确认新版首页标题、文案、插画和卡片布局。
+- [x] 保留现有崩溃转储，不删除用户文件；根目录 `.dmp` 加入忽略规则。
+
+完成证据：`docs/qa/2026-08-03-workspace-version-fix.md`。

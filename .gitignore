@@ -7,3 +7,4 @@ entry/.cxx/
 local.properties
 *.log
 *.tmp
+/*.dmp

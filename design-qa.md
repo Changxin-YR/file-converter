@@ -137,3 +137,11 @@
 - `passed`：phone 首页、phone 关于页、2in1 首页、2in1 关于页均安装同一 HAP 实测，内容无裁切，标签切换和选中态正常。
 - `passed`：静态契约覆盖 600–839vp tablet 三列分支；本轮无独立 tablet 模拟器，因此未声明 tablet 设备截图通过。
 - 完整操作前后状态与截图索引：`docs/qa/2026-08-03-home-about-reference-ui.md`。
+
+## 2026-08-03 应用图标替换回归
+
+- `passed`：图标契约先以旧 512x512 entry 资源复现失败，替换后确认三处资源均为 1024x1024 RGBA PNG 且字节一致。
+- `passed`：phone 关于页、phone 桌面、2in1 关于页与 2in1 任务栏均显示新蓝色环形箭头文件图标，主体完整且未被应用布局裁切。
+- `passed`：21 个自动契约、28 个 ArkTS 文件类型检查、标准门禁和 HarmonyOS 完整构建通过。
+- `boundary`：系统会对桌面图标施加设备形态遮罩；发布签名和商店材料不属于图片资源替换范围，当前仍生成 unsigned HAP。
+- 完整证据：`docs/qa/2026-08-03-app-icon-replacement.md`。

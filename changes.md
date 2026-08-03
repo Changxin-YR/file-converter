@@ -232,3 +232,12 @@
 - phone 与 2in1 均安装同一 HAP，并通过首页/关于页切换、内容完整性、底栏选中态和宽屏响应式检查。
 - 提交前审查补齐 tablet 三列断点、独立 About 路由返回入口，并清理应用图标外围不透明底色。
 - 业务路由、转换能力、离线边界、包名和签名配置均未改变；证据见 `docs/qa/2026-08-03-home-about-reference-ui.md`。
+
+## 2026-08-03｜应用图标上架规范替换
+
+- 将用户提供的 1254x1254 PNG 确定性缩放为 1024x1024 RGBA PNG，不重绘、不改变主体设计。
+- 统一替换 AppScope 桌面图标、entry 窗口图标和关于页图标，三份资源字节完全一致。
+- 新增 `scripts/test-app-icon-contract.js`，约束 PNG 格式、1024x1024 尺寸、RGBA 色彩类型和三处资源一致性。
+- 21 个自动契约、28 个 ArkTS 文件类型检查、标准门禁及 HarmonyOS 完整构建通过；phone 与 2in1 均完成安装和视觉验证。
+- 未新增网络权限，未修改包名、应用 ID、版本、签名身份或 AGC 元数据；开发构建仍为 unsigned HAP。
+- 证据：`docs/qa/2026-08-03-app-icon-replacement.md`。

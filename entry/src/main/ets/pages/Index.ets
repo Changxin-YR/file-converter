@@ -65,7 +65,8 @@ struct Index {
         }
         .tabBar(this.TabBarBuilder($r('app.string.tab_about'), 'i', 1))
       }
-      .barHeight(56)
+      .barHeight(72)
+      .barBackgroundColor($r('app.color.surface_primary'))
       .onChange((index: number) => {
         this.currentTabIndex = index
       })
@@ -81,14 +82,14 @@ struct Index {
   @Builder
   HomeContent() {
     Scroll() {
-      Column({ space: 14 }) {
-        Column({ space: 4 }) {
+      Column({ space: 8 }) {
+        Column({ space: 6 }) {
           Text($r('app.string.app_name'))
-            .fontSize(25)
+            .fontSize(32)
             .fontWeight(FontWeight.Bold)
             .fontColor($r('app.color.text_primary'))
           Text('多种格式 · 快速转换 · 安全可靠')
-            .fontSize(13)
+            .fontSize(15)
             .fontColor($r('app.color.text_secondary'))
         }
         .width('100%')
@@ -96,7 +97,7 @@ struct Index {
 
         Image($r('app.media.ui_hero_home'))
           .width('100%')
-          .height(154)
+          .height(156)
           .objectFit(ImageFit.Contain)
 
         Grid() {
@@ -114,13 +115,13 @@ struct Index {
           }, (card: FunctionCard) => card.route)
         }
         .columnsTemplate(this.gridColumns)
-        .columnsGap(10)
-        .rowsGap(10)
+        .columnsGap(12)
+        .rowsGap(12)
         .width('100%')
       }
       .width('100%')
       .constraintSize({ maxWidth: UiConstants.CONTENT_MAX_WIDTH })
-      .padding({ left: this.pagePadding, right: this.pagePadding, top: 18, bottom: 18 })
+      .padding({ left: this.pagePadding, right: this.pagePadding, top: 20, bottom: 20 })
     }
     .width('100%')
     .height('100%')
@@ -130,42 +131,25 @@ struct Index {
   @Builder
   AboutContent() {
     Scroll() {
-      Column({ space: 14 }) {
-        Image($r('app.media.app_icon'))
-          .width(104)
-          .height(104)
+      Column({ space: 16 }) {
+        Image($r('app.media.ui_about_app_icon'))
+          .width(128)
+          .height(128)
           .objectFit(ImageFit.Contain)
-          .margin({ top: 48 })
+          .margin({ top: 72 })
         Text($r('app.string.app_name'))
-          .fontSize(24)
+          .fontSize(28)
           .fontWeight(FontWeight.Bold)
           .fontColor($r('app.color.text_primary'))
         Text('单机离线，数据不出设备')
           .fontSize(17)
           .fontWeight(FontWeight.Medium)
           .fontColor($r('app.color.brand_primary'))
-        Column({ space: 10 }) {
-          Text('文件只在设备本地处理')
-            .fontSize(14)
-            .fontColor($r('app.color.text_primary'))
-          Text('不联网、无后端、不上传')
-            .fontSize(14)
-            .fontColor($r('app.color.text_primary'))
-          Text('不收集、不存储用户文件')
-            .fontSize(14)
-            .fontColor($r('app.color.text_primary'))
-          Text('仅在使用时访问所选文件')
-            .fontSize(14)
-            .fontColor($r('app.color.text_primary'))
-        }
-        .width('100%')
-        .padding(18)
-        .backgroundColor($r('app.color.surface_primary'))
-        .borderRadius(UiConstants.CARD_RADIUS)
+        this.PrivacySection()
         Text('版本 1.0.0 · HarmonyOS API 22 · 6.0.2')
-          .fontSize(12)
+          .fontSize(13)
           .fontColor($r('app.color.text_tertiary'))
-          .margin({ top: 8 })
+          .margin({ top: 24 })
       }
       .width('100%')
       .constraintSize({ maxWidth: UiConstants.CONTENT_MAX_WIDTH })
@@ -179,24 +163,73 @@ struct Index {
 
   @Builder
   TabBarBuilder(title: Resource, icon: string, index: number) {
-    Column({ space: 1 }) {
+    Column({ space: 2 }) {
       Text(icon)
-        .fontSize(20)
+        .fontSize(23)
         .fontWeight(FontWeight.Bold)
         .fontColor(this.currentTabIndex === index ? $r('app.color.brand_primary') : $r('app.color.text_tertiary'))
       Text(title)
-        .fontSize(11)
+        .fontSize(13)
         .fontWeight(this.currentTabIndex === index ? FontWeight.Medium : FontWeight.Normal)
         .fontColor(this.currentTabIndex === index ? $r('app.color.brand_primary') : $r('app.color.text_tertiary'))
+      this.TabSelectionLine(index)
     }
     .width('100%')
-    .height(56)
+    .height(72)
     .justifyContent(FlexAlign.Center)
+  }
+
+  @Builder
+  TabSelectionLine(index: number) {
+    Row()
+      .width(28)
+      .height(3)
+      .borderRadius(2)
+      .backgroundColor($r('app.color.brand_primary'))
+      .opacity(this.currentTabIndex === index ? 1 : 0)
+  }
+
+  @Builder
+  PrivacySection() {
+    Column({ space: 0 }) {
+      this.PrivacyRow('文件只在设备本地处理', $r('app.media.ui_privacy_local'))
+      this.PrivacyRow('不联网、无后端、不上传', $r('app.media.ui_privacy_offline'))
+      this.PrivacyRow('不收集、不存储用户文件', $r('app.media.ui_privacy_storage'))
+      this.PrivacyRow('仅在使用时访问所选文件', $r('app.media.ui_privacy_access'))
+    }
+    .width('100%')
+    .margin({ top: 24 })
+    .backgroundColor($r('app.color.surface_primary'))
+    .borderRadius(20)
+    .shadow({ radius: 18, color: $r('app.color.shadow_panel'), offsetX: 0, offsetY: 8 })
+  }
+
+  @Builder
+  PrivacyRow(label: string, asset: Resource) {
+    Row({ space: 18 }) {
+      Image(asset)
+        .width(40)
+        .height(40)
+        .objectFit(ImageFit.Contain)
+      Text(label)
+        .fontSize(16)
+        .fontColor($r('app.color.text_primary'))
+        .layoutWeight(1)
+    }
+    .width('100%')
+    .constraintSize({ minHeight: 58 })
+    .padding({ left: 18, right: 18, top: 8, bottom: 8 })
+    .border({ width: { bottom: 1 }, color: $r('app.color.border_subtle') })
   }
 
   private updateResponsiveLayout(width: number): void {
     if (width >= UiConstants.BREAKPOINT_LARGE) {
       this.gridColumns = '1fr 1fr 1fr 1fr'
+      this.pagePadding = UiConstants.PAGE_PADDING_LARGE
+      return
+    }
+    if (width >= UiConstants.BREAKPOINT_MEDIUM) {
+      this.gridColumns = '1fr 1fr 1fr'
       this.pagePadding = UiConstants.PAGE_PADDING_LARGE
       return
     }

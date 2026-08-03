@@ -75,6 +75,14 @@
     {
       "name": "card_background",
       "value": "#FFFFFF"
+    },
+    {
+      "name": "shadow_card",
+      "value": "#0D1769FF"
+    },
+    {
+      "name": "shadow_panel",
+      "value": "#101769FF"
     }
   ]
 }

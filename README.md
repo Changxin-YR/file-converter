@@ -1,4 +1,4 @@
-# 万能格式转换（FormatConverter）
+# 文件转换盒（FormatConverter）
 
 本地单机文件格式转换工具,覆盖文档、图片、音频、视频与受限 PDF 转换。应用**不联网、无后端、不上传任何数据**,所有转换均在设备本地完成。
 
@@ -19,7 +19,7 @@
 | 文档格式转换 | 主 | TXT / CSV / JSON / XML / HTML / Markdown 互转与文本 PDF 导出 |
 | 图片格式转换 | 主 | PNG / JPG / JPEG / WEBP / BMP 互转,图片尺寸调整；HEIF 输出灰置 |
 | 音频格式转换 | 辅助 | 16-bit PCM WAV → M4A（AAC LC） |
-| 视频与音轨 | 辅助 | 视频转 MP4；含 AAC 音轨的 MP4 → M4A 无损重封装 |
+| 视频转换 | 辅助 | 视频转 MP4；含 AAC 音轨的 MP4 → M4A 无损重封装 |
 | PDF 工具 | 辅助 | JPG/文本/HTML → PDF；项目自产未压缩文本 PDF → DOC/Markdown |
 
 ## 技术栈

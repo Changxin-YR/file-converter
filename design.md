@@ -25,7 +25,7 @@
 | 主 | 图片格式转换 | PNG / JPG / JPEG / WEBP / BMP 互转,尺寸调整；HEIF 输出灰置 |
 | 主 | 文档格式转换 | TXT / CSV / JSON / XML / HTML / MD 互转,编码转换 |
 | 辅助 | 音频格式转换 | 16-bit PCM WAV → M4A（原生可靠）,其他来源格式待扩展 |
-| 辅助 | 视频与音轨 | H.264/AAC MOV 无损重封装为 MP4；MP4 内 AAC 音轨无损重封装为 M4A |
+| 辅助 | 视频转换 | H.264/AAC MOV 无损重封装为 MP4；MP4 内 AAC 音轨无损重封装为 M4A |
 | 辅助 | PDF 工具 | JPG/文本/HTML → PDF；项目自产未压缩文本 PDF → DOC/MD |
 | 预留 | Office / 复杂 PDF | 🧩 离线三方引擎扩展点 |
 

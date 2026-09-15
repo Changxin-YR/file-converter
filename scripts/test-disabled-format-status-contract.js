@@ -1,27 +1,31 @@
 const fs = require('fs')
 const path = require('path')
 
-const componentsDir = path.join(__dirname, '..', 'entry', 'src', 'main', 'ets', 'components')
-const selectorSource = fs.readFileSync(path.join(componentsDir, 'FormatSelector.ets'), 'utf8')
-const chipSource = fs.readFileSync(path.join(componentsDir, 'OptionChipGroup.ets'), 'utf8')
+const etsDir = path.join(__dirname, '..', 'entry', 'src', 'main', 'ets')
 
 function assert(condition, message) {
   if (!condition) throw new Error(message)
 }
 
-assert(
-  /developing:\s*!format\.nativeSupported/.test(selectorSource) &&
-    chipSource.includes("Text('功能正在开发')"),
-  'Unsupported format chips must visibly render 功能正在开发'
-)
-assert(
-  /enabled:\s*!this\.disabled\s*&&\s*format\.nativeSupported/.test(selectorSource) &&
-    chipSource.includes("$r('app.color.control_disabled')"),
-  'Unsupported format chips must retain their disabled visual state'
-)
-assert(
-  /if\s*\(\s*!this\.isEnabled\(item\)\s*\)\s*\{\s*return\s*\}/.test(chipSource),
-  'Unsupported format chips must not invoke the selection callback'
-)
+function readEtsFiles(dir) {
+  const sources = []
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const entryPath = path.join(dir, entry.name)
+    if (entry.isDirectory()) {
+      sources.push(...readEtsFiles(entryPath))
+    } else if (entry.name.endsWith('.ets')) {
+      sources.push({ path: entryPath, source: fs.readFileSync(entryPath, 'utf8') })
+    }
+  }
+  return sources
+}
 
-console.log('DISABLED FORMAT STATUS CONTRACT PASSED')
+for (const file of readEtsFiles(etsDir)) {
+  assert(!file.source.includes('功能正在开发'), `${file.path} must not advertise an unreleased feature`)
+  assert(!file.source.includes('developing'), `${file.path} must not retain the unreleased feature state`)
+  for (const match of file.source.matchAll(/\.fontSize\((\d+(?:\.\d+)?)\)/g)) {
+    assert(Number(match[1]) >= 10, `${file.path} uses fontSize(${match[1]}), below the 10fp release minimum`)
+  }
+}
+
+console.log('PUBLISHED CAPABILITY UI CONTRACT PASSED')

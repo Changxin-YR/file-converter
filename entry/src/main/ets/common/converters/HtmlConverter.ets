@@ -59,6 +59,8 @@ export class HtmlConverter {
     // 换行与段落
     out = out.replace(/<\/p>/gi, '\n\n')
     out = out.replace(/<br\s*\/?>/gi, '\n')
+    // 普通段落中的行内元素也必须在去标签前转换。
+    out = HtmlConverter.inlineMd(out)
     // 移除其余标签
     out = out.replace(/<[^>]*>/g, '')
     out = HtmlConverter.decodeEntities(out)
@@ -91,7 +93,7 @@ export class HtmlConverter {
     out = out.replace(/<em[^>]*>([\s\S]*?)<\/em>/gi, '*$1*')
     out = out.replace(/<i[^>]*>([\s\S]*?)<\/i>/gi, '*$1*')
     out = out.replace(/<code[^>]*>([\s\S]*?)<\/code>/gi, '`$1`')
-    out = out.replace(/<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)')
+    out = out.replace(/<a[^>]*href\s*=\s*(?:"([^"]*)"|'([^']*)')[^>]*>([\s\S]*?)<\/a>/gi, '[$3]($1$2)')
     return out
   }
 

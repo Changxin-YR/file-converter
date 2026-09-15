@@ -28,8 +28,7 @@ const VIDEO_SOURCE_SUFFIXES: string[] = ['.mp4', '.mov', '.avi', '.mkv', '.flv',
 
 const VIDEO_TARGET_FORMATS: FormatInfo[] = [
   { extension: 'mp4', mimeType: 'video/mp4', displayName: 'MP4', category: ConvertType.VIDEO, nativeSupported: true },
-  { extension: 'm4a', mimeType: 'audio/mp4', displayName: 'M4A(提取音频)', category: ConvertType.AUDIO, nativeSupported: true },
-  { extension: 'mp3', mimeType: 'audio/mpeg', displayName: 'MP3(提取音频)', category: ConvertType.AUDIO, nativeSupported: false }
+  { extension: 'm4a', mimeType: 'audio/mp4', displayName: 'M4A(提取音频)', category: ConvertType.AUDIO, nativeSupported: true }
 ]
 
 @Entry
@@ -106,10 +105,11 @@ struct VideoConvertPage {
         disabled: this.converting,
         selectCallback: (ext: string) => {
           this.targetFormat = ext
+          this.updateM4aInputStatus()
         }
       })
 
-      Text('支持视频转 MP4；含 AAC 音轨的 MP4 可无损提取为 M4A，MP3 暂不支持')
+      Text('支持视频转 MP4；含 AAC 音轨的 MP4 可无损提取为 M4A')
         .fontSize(12)
         .fontColor($r('app.color.text_secondary'))
     }
@@ -122,7 +122,7 @@ struct VideoConvertPage {
     Column({ space: 12 }) {
       PrimaryActionButton({
         label: '开始转换',
-        isEnabled: !this.converting && this.selectedFiles.length > 0,
+        isEnabled: !this.converting && this.selectedFiles.length > 0 && this.supportsSelectedM4aInput(),
         loading: this.converting,
         onTap: () => this.startConvert()
       })
@@ -159,9 +159,9 @@ struct VideoConvertPage {
       const uris: string[] = await this.pickerService.pickFiles(VIDEO_SOURCE_SUFFIXES, 5)
       if (uris.length > 0) {
         this.selectedFiles = uris
-        this.statusText = ''
         this.progress = 0
         this.successCount = 0
+        this.updateM4aInputStatus()
       }
     } catch (e) {
       const err = e as BusinessError
@@ -176,6 +176,10 @@ struct VideoConvertPage {
     const SUPPORTED: string[] = ['mp4', 'm4a']
     if (!SUPPORTED.includes(this.targetFormat)) {
       this.statusText = `${this.targetFormat.toUpperCase()} 格式暂不支持离线转换`
+      return
+    }
+    if (!this.supportsSelectedM4aInput()) {
+      this.statusText = 'M4A 提取仅支持 MP4 输入，请重新选择 MP4 文件'
       return
     }
     this.converting = true
@@ -258,11 +262,9 @@ struct VideoConvertPage {
         config.videoCodec = media.CodecMimeType.VIDEO_AVC
       }
 
-      await activeTranscoder.prepare(config)
-      await activeTranscoder.start()
-
-      // 等待转码完成
-      await new Promise<void>((resolve: () => void, reject: (err: Error) => void) => {
+      // Register listeners before prepare/start so fast conversions cannot
+      // finish before the promise is observing the terminal event.
+      const conversionFinished: Promise<void> = new Promise<void>((resolve: () => void, reject: (err: Error) => void) => {
         const onComplete = (): void => {
           activeTranscoder.off('error')
           resolve()
@@ -274,6 +276,9 @@ struct VideoConvertPage {
         activeTranscoder.on('complete', onComplete)
         activeTranscoder.on('error', onError)
       })
+      await activeTranscoder.prepare(config)
+      await activeTranscoder.start()
+      await conversionFinished
     } catch (e) {
       const err = e as BusinessError
       throw new Error(`视频格式或当前设备的 MP4 编码器不支持:${err.message}`)
@@ -283,6 +288,29 @@ struct VideoConvertPage {
       }
       fs.closeSync(sourceFile)
       fs.closeSync(outFile)
+    }
+  }
+
+  private supportsSelectedM4aInput(): boolean {
+    if (this.targetFormat !== 'm4a') {
+      return true
+    }
+    for (const uri of this.selectedFiles) {
+      if (FileUtils.getExtension(uri) !== 'mp4') {
+        return false
+      }
+    }
+    return true
+  }
+
+  private updateM4aInputStatus(): void {
+    const unsupportedMessage = 'M4A 提取仅支持 MP4 输入，请重新选择 MP4 文件'
+    if (!this.supportsSelectedM4aInput()) {
+      this.statusText = unsupportedMessage
+      return
+    }
+    if (this.statusText === unsupportedMessage) {
+      this.statusText = ''
     }
   }
 }

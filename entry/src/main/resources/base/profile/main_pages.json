@@ -3,7 +3,6 @@
     "pages/Index",
     "pages/DocumentConvertPage",
     "pages/ImageConvertPage",
-    "pages/AudioConvertPage",
     "pages/VideoConvertPage",
     "pages/ImageToolsPage",
     "pages/ArchiveTimePage",

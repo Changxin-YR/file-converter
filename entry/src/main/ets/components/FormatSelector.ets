@@ -25,8 +25,7 @@ export struct FormatSelector {
       items.push({
         key: format.extension,
         label: format.displayName,
-        enabled: !this.disabled && format.nativeSupported,
-        developing: !format.nativeSupported
+        enabled: format.nativeSupported
       })
     }
     return items

@@ -153,3 +153,27 @@
 - `passed`：phone 启动后布局树确认前台为 `com.maxtools.formatconverter/pages/Index`，点击文档卡后进入 `pages/DocumentConvertPage`。
 - `blocked`：phone 文档页点击“选择文件”后系统 Picker 未进入前台，布局树切回其他已安装应用，无法完成真实多文件选择与单次批量保存闭环；不以契约测试替代该设备证据。
 - 完整证据：`docs/qa/2026-08-03-test-report-remediation.md`。
+
+## 2026-08-03 第三轮资源、组件与 ArkTS 审查修复
+
+- `passed`：深色主题资源完整覆盖、禁用格式选中态、ZIP 同名文件、CSV 单独 CR、HTML 单引号链接、读屏语义、浅色三级文本对比度、文件面板大字体伸展与结果列表 key 均由先失败的专项契约覆盖。
+- `passed`：PDF emoji 保持 UTF-16BE surrogate pair；不采纳会破坏编码的 `codePointAt` 替换建议。视频 fd、文档批量保存、HEIF 灰置和 Native Audio 源码均核实为已有实现。
+- `passed`：28 个自动契约、28 文件类型检查、标准门禁及 HarmonyOS 完整构建；phone 已安装本轮 HAP，视频空状态与关于页共享隐私区截图通过。
+- `blocked`：深色主题视觉截图、非 MP4→M4A 的系统 Picker 闭环和 CJK PDF 目标阅读器显示仍需相应设备/样本或可发布字体资产；不以代码契约替代这些设备证据。
+- 完整证据：`docs/qa/2026-08-03-third-round-review-remediation.md`。
+
+## 2026-08-03 应用名称变更回归
+
+- `passed`：名称契约先以两套资源仍为“万能格式转换”复现失败；修改后确认 AppScope、entry、首页和独立关于页统一为“文件格式盒”。
+- `passed`：29 个 Node 契约、28 个 ArkTS 文件类型检查、标准门禁和 HarmonyOS 完整构建通过。
+- `passed`：phone `127.0.0.1:5555` 成功覆盖安装新 HAP；首页截图与关于页布局树均显示“文件格式盒”。
+- `boundary`：本次只改显示名，不改 bundleName、应用 ID、版本、签名、权限或图标。商店名称是否可用仍须以 AppGallery Connect 提交时的实时校验为准。
+- 完整证据：`docs/qa/2026-08-03-app-name-change.md`。
+
+## 2026-08-04 AppGallery 审核功能下架与字号整改
+
+- `passed`：首页不再提供音频转换；图片页不显示 HEIF/GIF，视频页不显示 MP3，档案页仅显示 ZIP；共享组件不再渲染“开发中”占位。
+- `passed`：29 个 Node 契约通过，包含下架项不存在、音频页面/服务不存在、视频 M4A 原生路径保留，以及全部 ArkTS 用户可见 `.fontSize()` 不低于 10fp 的检查。
+- `passed`：`scripts/check-standard.ps1` 通过，0 个 warning。
+- `blocked`：Hvigor 已通过 ArkTS、Native、资源、打包阶段并生成 unsigned HAP，但在既有 `build-profile.json5` 所引用的本机缺失签名证书处失败。签名配置不属于本次整改授权范围；恢复可用发布证书后需重新构建并在设备上复验首页、图片、视频和档案页。
+- 完整证据：`docs/qa/2026-08-04-appgallery-functional-remediation.md`。

@@ -18,6 +18,7 @@ export struct AppPageHeader {
         .width(UiConstants.TOUCH_MIN_HEIGHT)
         .height(UiConstants.TOUCH_MIN_HEIGHT)
         .backgroundColor(Color.Transparent)
+        .accessibilityText('返回')
         .onClick(() => this.onBack())
       }
       Column({ space: 2 }) {

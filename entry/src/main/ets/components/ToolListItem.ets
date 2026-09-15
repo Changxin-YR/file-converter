@@ -18,6 +18,7 @@ export struct ToolListItem {
   build() {
     Row({ space: 12 }) {
       Image(this.data.asset)
+        .accessibilityText(this.data.title + '图标')
         .width(44)
         .height(44)
         .objectFit(ImageFit.Contain)
@@ -27,7 +28,7 @@ export struct ToolListItem {
           .fontSize(15)
           .fontWeight(FontWeight.Medium)
           .fontColor(this.data.enabled ? $r('app.color.text_primary') : $r('app.color.text_disabled'))
-        Text(this.data.enabled ? this.data.description : '功能正在开发')
+        Text(this.data.description)
           .fontSize(12)
           .fontColor(this.data.enabled ? $r('app.color.text_secondary') : $r('app.color.text_disabled'))
           .maxLines(1)

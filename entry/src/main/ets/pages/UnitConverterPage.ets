@@ -271,7 +271,7 @@ struct UnitConverterPage {
 
   private getUnitChips(): ChipItem[] {
     return this.getCurrentUnits().map((unit: UnitItem) => {
-      const chip: ChipItem = { key: unit.key, label: unit.label, enabled: true, developing: false }
+      const chip: ChipItem = { key: unit.key, label: unit.label, enabled: true }
       return chip
     })
   }

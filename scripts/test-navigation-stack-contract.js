@@ -4,7 +4,6 @@ const path = require('path')
 const pages = [
   'AboutPage.ets',
   'ArchiveTimePage.ets',
-  'AudioConvertPage.ets',
   'DocumentConvertPage.ets',
   'ImageConvertPage.ets',
   'ImageToolsPage.ets',

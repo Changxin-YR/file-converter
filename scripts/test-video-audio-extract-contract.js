@@ -36,10 +36,7 @@ assert(
   /extension:\s*'m4a'[\s\S]*?nativeSupported:\s*true/.test(page),
   'M4A audio extraction must be available on the video page'
 )
-assert(
-  /extension:\s*'mp3'[\s\S]*?nativeSupported:\s*false/.test(page),
-  'MP3 must remain unavailable'
-)
+assert(!/extension:\s*'mp3'/.test(page), 'MP3 extraction must be absent from the video target list')
 assert(
   /const SUPPORTED:\s*string\[\]\s*=\s*\['mp4',\s*'m4a'\]/.test(page),
   'Only MP4 and M4A may enter video conversion execution paths'

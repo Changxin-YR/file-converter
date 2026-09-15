@@ -1,6 +1,6 @@
 /**
  * CSV 解析与序列化
- * 支持引号包裹字段、逗号/换行在引号内、双引号转义、CRLF/LF。
+ * 支持引号包裹字段、逗号/换行在引号内、双引号转义、CRLF/LF/CR。
  */
 import { TableModel } from './TableModel'
 
@@ -61,14 +61,16 @@ export class CsvConverter {
           current.push(field)
           field = ''
           i++
-        } else if (ch === '\n') {
+        } else if (ch === '\n' || ch === '\r') {
           current.push(field)
           field = ''
           rows.push(current)
           current = []
-          i++
-        } else if (ch === '\r') {
-          i++
+          if (ch === '\r' && i + 1 < len && text.charAt(i + 1) === '\n') {
+            i += 2
+          } else {
+            i++
+          }
         } else {
           field += ch
           i++

@@ -99,6 +99,7 @@ struct PdfToolsPage {
   ToolGridSection() {
     Column({ space: 12 }) {
       Image($r('app.media.ui_hero_pdf'))
+        .accessibilityText('PDF 工具插图')
         .width('100%')
         .height(132)
         .objectFit(ImageFit.Contain)

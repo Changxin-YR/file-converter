@@ -1,6 +1,20 @@
 {
   "app": {
-    "signingConfigs": [],
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "storeFile": "./signing/zuogejueding.p12",
+          "storePassword": "",
+          "keyAlias": "zgjd",
+          "keyPassword": "",
+          "signAlg": "SHA256withECDSA",
+          "profile": "./signing/文件转换盒Release.p7b",
+          "certpath": "./signing/zuogejueding.cer"
+        }
+      }
+    ],
     "products": [
       {
         "name": "default",
@@ -31,7 +45,9 @@
       "targets": [
         {
           "name": "default",
-          "applyToProducts": ["default"]
+          "applyToProducts": [
+            "default"
+          ]
         }
       ]
     }

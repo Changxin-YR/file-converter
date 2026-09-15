@@ -27,6 +27,24 @@ export class FileUtils {
     return idx > 0 ? name.substring(idx + 1).toLowerCase() : ''
   }
 
+  /**
+   * 生成在同一目录中不与已占用名称冲突的文件名。
+   * 同名文件按“名称 (2).扩展名”递增，保留原始扩展名。
+   */
+  static makeUniqueFileName(fileName: string, usedNames: string[]): string {
+    const lastDot = fileName.lastIndexOf('.')
+    const baseName = lastDot > 0 ? fileName.substring(0, lastDot) : fileName
+    const extension = lastDot > 0 ? fileName.substring(lastDot) : ''
+    let candidate = fileName
+    let suffix = 2
+    while (usedNames.includes(candidate)) {
+      candidate = `${baseName} (${suffix})${extension}`
+      suffix++
+    }
+    usedNames.push(candidate)
+    return candidate
+  }
+
   /** 生成任务唯一 ID */
   static genTaskId(): string {
     return `task_${Date.now()}_${Math.floor(Math.random() * 10000)}`

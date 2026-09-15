@@ -183,7 +183,7 @@ struct DocumentConvertPage {
   private getEncodingItems(): ChipItem[] {
     const items: ChipItem[] = []
     for (const encoding of SOURCE_ENCODINGS) {
-      items.push({ key: encoding, label: encoding.toUpperCase(), enabled: true, developing: false })
+      items.push({ key: encoding, label: encoding.toUpperCase(), enabled: true })
     }
     return items
   }

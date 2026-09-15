@@ -1,4 +1,4 @@
-# 文件转换盒（FormatConverter）项目规则
+# 万能格式转换（FormatConverter）项目规则
 
 本文件适用于本项目根目录及全部子目录。更深目录存在独立 `AGENTS.md` 时,以更具体的规则为准。
 

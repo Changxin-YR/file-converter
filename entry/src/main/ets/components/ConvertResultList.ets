@@ -8,7 +8,7 @@ export struct ConvertResultList {
 
   build() {
     Column({ space: 8 }) {
-      ForEach(this.results, (path: string) => {
+      ForEach(this.results, (path: string, index: number) => {
         Row() {
           Text('✓')
             .fontSize(14)
@@ -25,7 +25,7 @@ export struct ConvertResultList {
         .padding({ left: 12, right: 12, top: 10, bottom: 10 })
         .borderRadius(8)
         .backgroundColor($r('app.color.card_background'))
-      }, (path: string) => path)
+      }, (path: string, index: number) => `${index}_${path}`)
     }
     .width('100%')
   }

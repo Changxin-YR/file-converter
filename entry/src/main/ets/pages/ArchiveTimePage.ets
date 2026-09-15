@@ -50,10 +50,7 @@ const ARCHIVE_MODES: SegmentItem[] = [
 ]
 
 const ARCHIVE_FORMATS: ChipItem[] = [
-  { key: 'zip', label: 'ZIP', enabled: true, developing: false },
-  { key: '7z', label: '7Z', enabled: false, developing: true },
-  { key: 'tar.gz', label: 'TAR.GZ', enabled: false, developing: true },
-  { key: 'rar', label: 'RAR', enabled: false, developing: true }
+  { key: 'zip', label: 'ZIP', enabled: true }
 ]
 
 @Entry
@@ -143,17 +140,6 @@ struct ArchiveTimePage {
         onPick: () => this.pickArchiveFiles()
       })
 
-      Text('档案格式')
-        .fontSize(16)
-        .fontWeight(FontWeight.Medium)
-        .fontColor($r('app.color.text_primary'))
-      OptionChipGroup({
-        items: ARCHIVE_FORMATS,
-        selectedKey: 'zip',
-        disabled: this.processing,
-        onSelect: (_key: string) => {}
-      })
-
       PrimaryActionButton({
         label: this.archiveMode === 0 ? '压缩为 ZIP 并保存' : '解压到指定位置',
         isEnabled: !this.processing && this.selectedFiles.length > 0,
@@ -181,6 +167,7 @@ struct ArchiveTimePage {
   TimezoneSection() {
     Column({ space: 16 }) {
       Image($r('app.media.ui_globe'))
+        .accessibilityText('时区换算插图')
         .width('100%')
         .height(132)
         .objectFit(ImageFit.Contain)
@@ -320,11 +307,15 @@ struct ArchiveTimePage {
       const context = getContext(this) as common.UIAbilityContext
       const tempDir = `${context.tempDir}/zip_src_${Date.now()}`
       fs.mkdirSync(tempDir)
+      const stagedNames: string[] = []
 
       for (const uri of this.selectedFiles) {
         const fileName = FileUtils.getFileName(uri)
-        const destPath = `${tempDir}/${fileName}`
-        FileUtils.copyFile(uri, destPath)
+        const stagedName = FileUtils.makeUniqueFileName(fileName, stagedNames)
+        const destPath = `${tempDir}/${stagedName}`
+        if (!FileUtils.copyFile(uri, destPath)) {
+          throw new Error(`暂存压缩文件失败:${fileName}`)
+        }
       }
 
       const zipPath = `${context.tempDir}/output_${Date.now()}.zip`

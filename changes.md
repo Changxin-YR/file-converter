@@ -251,3 +251,30 @@
 - 收尾审查补充：文档复制失败删除新建的空/部分目标并按原始输入序号反馈；视频保存失败不计成功且所有临时产物在 `finally` 清理；音频混合批次同时报告失败数。
 - HEIF 灰置、图片同格式提示、音频采样率跟随源文件和受限 PDF 能力已符合现状，本轮未重复修改；国际化与颜色采样算法留作独立需求。
 - 新增 2 个专项契约并扩展 5 个既有契约；23 个自动契约与 HarmonyOS 完整构建通过。设备回归边界见 `docs/qa/2026-08-03-test-report-remediation.md`。
+
+## 2026-08-03｜第三轮资源、组件与 ArkTS 审查建议修复
+
+- 状态：`done`
+- 补齐深色主题 10 个遗漏颜色并将浅色 `text_tertiary` 调整至 AA 对比度；进度条改为统一 `brand_primary`。
+- 目标格式状态改为“选中且可用”才显示品牌色；格式固有能力与父级临时禁用分离。M4A 提取在存在非 MP4 输入时禁用执行并说明容器限制。
+- 提取 `PrivacyNoticeSection`、补足图片和返回按钮读屏文本、将文件面板改为 156vp 最小高度、为结果列表使用含索引的稳定 key。
+- CSV 解析支持单独 CR；HTML→Markdown 支持单引号链接和普通段落行内标记；ZIP 暂存对同名文件自动编号且复制失败不静默继续。
+- 核实报告中关于视频 fd、文档批量保存、HEIF 灰置和 Native Audio 源码的结论已被此前修复覆盖；PDF surrogate pair 应保留 UTF-16 代码单元，不按建议改为 `codePointAt`。
+- 通过 28 个 Node 契约、28 文件类型检查、标准门禁、HarmonyOS 完整构建和 phone 视频/关于页回归；完整证据：`docs/qa/2026-08-03-third-round-review-remediation.md`。
+
+## 2026-08-03｜应用名称变更为文件格式盒
+
+- 将 AppScope 与 entry 的 `app_name` 统一为“文件格式盒”，首页、关于页和读屏图标标签同步更新。
+- 新增 `scripts/test-app-name-contract.js`，锁定双资源、配置引用和页面旧名称清除，避免显示名重新分叉。
+- 同步 README、设计与开发文档；历史规格保留其撰写时的产品名称作为记录。
+- 29 个 Node 契约、28 文件类型检查、标准门禁和 HarmonyOS 完整构建通过；phone 已覆盖安装并核验首页与关于页名称。
+- 未修改 bundleName、应用 ID、版本、签名、权限、路由或图标；发布名称可用性仍以 AppGallery Connect 的实时校验为准。
+- 证据：`docs/qa/2026-08-03-app-name-change.md`。
+
+## 2026-08-04｜AppGallery 审核功能下架与字号整改
+
+- 下架审核实测失败的音频转换：首页入口、页面路由和 `AudioConvertService` 均已移除；仍由视频使用的 `native_audio` NAPI 模块保持不变。
+- 图片格式仅保留 PNG/JPG/JPEG/WEBP/BMP，移除 HEIF/GIF；视频目标格式仅保留 MP4 与 M4A，移除 MP3；档案格式仅保留 ZIP，移除 7Z/TAR.GZ/RAR。
+- 移除通用“开发中”占位状态与 9fp 提示文本。当前发布包仅展示已验证能力，所有用户可见 `.fontSize()` 值不低于 10fp。
+- 更新 9 个专项契约，先确认旧代码因保留的下架项失败，再完成 29 个 Node 契约全量通过；标准静态门禁通过。
+- HarmonyOS 构建完成 ArkTS、Native、打包并生成 unsigned HAP，但在既有签名配置引用的本机缺失证书处失败；未修改签名身份、口令、版本或 AGC 配置。详见 `docs/qa/2026-08-04-appgallery-functional-remediation.md`。

@@ -12,14 +12,8 @@ function assert(condition, message) {
   }
 }
 
-assert(
-  /extension:\s*'mp3'[\s\S]*?nativeSupported:\s*false/.test(source),
-  'MP3 must be marked unsupported because API 22 AVTranscoder emits AAC in an MP4 container'
-)
-assert(
-  !source.includes('支持 MP4 输出和 MP3 音频提取'),
-  'The page must not advertise MP3 extraction as supported'
-)
+assert(!/extension:\s*'mp3'/.test(source), 'MP3 extraction must be removed from the video page')
+assert(!source.includes('MP3'), 'The video page must not mention unreleased MP3 support')
 assert(
   /const SUPPORTED:\s*string\[\]\s*=\s*\['mp4',\s*'m4a'\]/.test(source),
   'Only MP4 and M4A may enter the video conversion paths'

@@ -9,8 +9,24 @@
       "value": "#121212"
     },
     {
+      "name": "surface_primary",
+      "value": "#1E1E1E"
+    },
+    {
+      "name": "surface_secondary",
+      "value": "#252A31"
+    },
+    {
+      "name": "brand_primary",
+      "value": "#2D74C4"
+    },
+    {
+      "name": "brand_strong",
+      "value": "#205A9E"
+    },
+    {
       "name": "primary",
-      "value": "#4DA8FF"
+      "value": "#2D74C4"
     },
     {
       "name": "text_primary",
@@ -25,12 +41,28 @@
       "value": "#66FFFFFF"
     },
     {
+      "name": "text_disabled",
+      "value": "#8F9AAF"
+    },
+    {
+      "name": "border_subtle",
+      "value": "#3A4658"
+    },
+    {
+      "name": "control_selected",
+      "value": "#263B56"
+    },
+    {
+      "name": "control_disabled",
+      "value": "#252A31"
+    },
+    {
       "name": "chip_background",
-      "value": "#1A4DA8FF"
+      "value": "#263B56"
     },
     {
       "name": "border",
-      "value": "#33FFFFFF"
+      "value": "#3A4658"
     },
     {
       "name": "success",
@@ -43,6 +75,14 @@
     {
       "name": "card_background",
       "value": "#1E1E1E"
+    },
+    {
+      "name": "shadow_card",
+      "value": "#00000000"
+    },
+    {
+      "name": "shadow_panel",
+      "value": "#00000000"
     }
   ]
 }

@@ -6,13 +6,13 @@ export struct FunctionTile {
   @Prop description: string = ''
   @Prop asset: Resource = $r('app.media.app_icon')
   @Prop isEnabled: boolean = true
-  @Prop developing: boolean = false
   onTap: () => void = () => {}
 
   build() {
     Row({ space: 8 }) {
       Stack() {
         Image(this.asset)
+          .accessibilityText(this.title + '图标')
           .width(44)
           .height(44)
           .objectFit(ImageFit.Contain)
@@ -29,7 +29,7 @@ export struct FunctionTile {
           .fontWeight(FontWeight.Bold)
           .fontColor(this.isEnabled ? $r('app.color.text_primary') : $r('app.color.text_disabled'))
           .maxLines(1)
-        Text(this.developing || !this.isEnabled ? '功能正在开发' : this.description)
+        Text(this.description)
           .fontSize(10)
           .fontColor(this.isEnabled ? $r('app.color.text_secondary') : $r('app.color.text_disabled'))
           .maxLines(2)
@@ -48,7 +48,7 @@ export struct FunctionTile {
     .borderRadius(UiConstants.CARD_RADIUS)
     .shadow({ radius: 12, color: $r('app.color.shadow_card'), offsetX: 0, offsetY: 4 })
     .onClick(() => {
-      if (!this.isEnabled || this.developing) {
+      if (!this.isEnabled) {
         return
       }
       this.onTap()

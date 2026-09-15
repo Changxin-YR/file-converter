@@ -25,8 +25,7 @@ const IMAGE_TARGET_FORMATS: FormatInfo[] = [
   { extension: 'jpg', mimeType: 'image/jpeg', displayName: 'JPG', category: ConvertType.IMAGE, nativeSupported: true },
   { extension: 'jpeg', mimeType: 'image/jpeg', displayName: 'JPEG', category: ConvertType.IMAGE, nativeSupported: true },
   { extension: 'webp', mimeType: 'image/webp', displayName: 'WEBP', category: ConvertType.IMAGE, nativeSupported: true },
-  { extension: 'bmp', mimeType: 'image/bmp', displayName: 'BMP', category: ConvertType.IMAGE, nativeSupported: true },
-  { extension: 'heif', mimeType: 'image/heif', displayName: 'HEIF', category: ConvertType.IMAGE, nativeSupported: false }
+  { extension: 'bmp', mimeType: 'image/bmp', displayName: 'BMP', category: ConvertType.IMAGE, nativeSupported: true }
 ]
 
 @Entry
@@ -191,7 +190,7 @@ struct ImageConvertPage {
     if (this.selectedFiles.length === 0) {
       return
     }
-    const NATIVE_FORMATS: string[] = ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'heif']
+    const NATIVE_FORMATS: string[] = ['png', 'jpg', 'jpeg', 'webp', 'bmp']
     if (!NATIVE_FORMATS.includes(this.targetFormat)) {
       this.statusText = `${this.targetFormat.toUpperCase()} 格式暂不支持离线转换`
       return

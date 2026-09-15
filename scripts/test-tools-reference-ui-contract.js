@@ -31,9 +31,8 @@ assertIncludes(archive, "app.media.ui_globe", 'Timezone tools must use the appro
 assertIncludes(archive, 'UiConstants.CONTENT_MAX_WIDTH', 'Archive/time tools must constrain wide layouts')
 assertIncludes(archive, "key: 'zip', label: 'ZIP', enabled: true", 'ZIP must remain enabled')
 for (const key of ['7z', 'tar.gz', 'rar']) {
-  const pattern = new RegExp(`key:\\s*'${key.replace('.', '\\.')}'[\\s\\S]*?enabled:\\s*false`)
-  if (!pattern.test(archive)) {
-    throw new Error(`${key.toUpperCase()} must remain disabled and developing`)
+  if (new RegExp(`key:\\s*'${key.replace('.', '\\.')}'`).test(archive)) {
+    throw new Error(`${key.toUpperCase()} must be removed from the published archive page`)
   }
 }
 assertIncludes(archive, 'minute < 0 || minute > 59', 'Timezone conversion must retain minute validation')

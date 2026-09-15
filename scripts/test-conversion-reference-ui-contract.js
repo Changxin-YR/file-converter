@@ -21,7 +21,7 @@ for (const fileName of ['ImageConvertPage.ets', 'DocumentConvertPage.ets']) {
   assertIncludes(source, 'UiConstants.CONTENT_MAX_WIDTH', `${fileName} must constrain wide layouts`)
 }
 
-for (const fileName of ['AudioConvertPage.ets', 'VideoConvertPage.ets']) {
+for (const fileName of ['VideoConvertPage.ets']) {
   const source = page(fileName)
   for (const component of ['AppPageHeader', 'FilePickerPanel', 'FormatSelector', 'PrimaryActionButton', 'StatusPanel']) {
     assertIncludes(source, component, `${fileName} must use ${component}`)
@@ -30,22 +30,19 @@ for (const fileName of ['AudioConvertPage.ets', 'VideoConvertPage.ets']) {
   assertIncludes(source, 'UiConstants.CONTENT_MAX_WIDTH', `${fileName} must constrain wide layouts`)
 }
 
-const audio = page('AudioConvertPage.ets')
-assertIncludes(audio, "targetFormat: string = 'm4a'", 'Audio conversion must default to the verified M4A path')
-assertIncludes(audio, 'AUDIO_FORMATS', 'Audio conversion must use the centralized capability matrix')
-if (!/onClick\(\(\) => \{\s*if \(this\.converting\) \{\s*return\s*\}/.test(audio)) {
-  throw new Error('Audio bitrate controls must be frozen while converting')
+if (fs.existsSync(path.join(pagesDir, 'AudioConvertPage.ets'))) {
+  throw new Error('Audio conversion page must be removed from the release')
 }
 const formatTypes = fs.readFileSync(path.join(commonDir, 'FormatTypes.ets'), 'utf8')
-for (const developingFormat of ['aac', 'mp3', 'flac', 'wav', 'ogg']) {
-  if (!new RegExp(`extension:\\s*'${developingFormat}'[\\s\\S]*?nativeSupported:\\s*false`).test(formatTypes)) {
-    throw new Error(`Audio conversion must retain gray ${developingFormat.toUpperCase()} capability`)
-  }
+if (formatTypes.includes('AUDIO_FORMATS')) {
+  throw new Error('Audio capability matrix must be removed with the audio feature')
 }
 
 const video = page('VideoConvertPage.ets')
 assertIncludes(video, "const SUPPORTED: string[] = ['mp4', 'm4a']", 'Video conversion must preserve the MP4/M4A execution allowlist')
-assertIncludes(video, "extension: 'mp3'", 'Video conversion must retain MP3 as a developing item')
+if (video.includes("extension: 'mp3'")) {
+  throw new Error('Video conversion must not retain MP3 as a developing item')
+}
 
 const image = page('ImageConvertPage.ets')
 for (const behavior of ['quality', 'Slider', 'saveToAlbum', 'width', 'height']) {

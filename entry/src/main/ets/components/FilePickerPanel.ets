@@ -14,6 +14,7 @@ export struct FilePickerPanel {
   build() {
     Row({ space: 16 }) {
       Image(this.asset)
+        .accessibilityText(this.title + '插图')
         .width(80)
         .height(80)
         .objectFit(ImageFit.Contain)
@@ -48,7 +49,7 @@ export struct FilePickerPanel {
       .alignItems(HorizontalAlign.Start)
     }
     .width('100%')
-    .height(156)
+    .constraintSize({ minHeight: 156 })
     .alignItems(VerticalAlign.Center)
     .padding(16)
     .backgroundColor($r('app.color.surface_secondary'))

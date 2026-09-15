@@ -5,6 +5,7 @@ const root = path.resolve(__dirname, '..')
 const index = fs.readFileSync(path.join(root, 'entry/src/main/ets/pages/Index.ets'), 'utf8')
 const about = fs.readFileSync(path.join(root, 'entry/src/main/ets/pages/AboutPage.ets'), 'utf8')
 const tile = fs.readFileSync(path.join(root, 'entry/src/main/ets/components/FunctionTile.ets'), 'utf8')
+const privacy = fs.readFileSync(path.join(root, 'entry/src/main/ets/components/PrivacyNoticeSection.ets'), 'utf8')
 const mediaDir = path.join(root, 'entry/src/main/resources/base/media')
 
 function requirePattern(source, pattern, message) {
@@ -30,10 +31,12 @@ requirePattern(index, /app\.media\.ui_about_app_icon/, 'Embedded About must use 
 requirePattern(about, /app\.media\.ui_about_app_icon/, 'Standalone About must use the approved arrow app icon')
 requirePattern(about, /AppPageHeader\([\s\S]*?router\.back\(\)/,
   'Standalone About route must retain an explicit back action')
-requirePattern(index, /constraintSize\(\{ minHeight: 58 \}\)/,
-  'Embedded About privacy rows must fit above the bottom navigation')
-requirePattern(about, /constraintSize\(\{ minHeight: 58 \}\)/,
-  'Standalone About privacy rows must use the approved compact height')
+requirePattern(privacy, /constraintSize\(\{ minHeight: 58 \}\)/,
+  'Shared privacy rows must use the approved compact height')
+for (const source of [index, about]) {
+  requirePattern(source, /PrivacyNoticeSection\(\)/,
+    'Embedded and standalone About surfaces must render the shared privacy section')
+}
 
 const privacyAssets = [
   'ui_privacy_local.png',
@@ -44,20 +47,18 @@ const privacyAssets = [
 for (const asset of privacyAssets) {
   if (!fs.existsSync(path.join(mediaDir, asset))) throw new Error(`${asset} is missing`)
   const resource = `app.media.${asset.replace('.png', '')}`
-  if (!index.includes(resource) || !about.includes(resource)) {
-    throw new Error(`${resource} must be used by embedded and standalone About pages`)
+  if (!privacy.includes(resource)) {
+    throw new Error(`${resource} must be used by the shared privacy section`)
   }
 }
 
-for (const source of [index, about]) {
-  requirePattern(source, /PrivacyRow\([^,]+,\s*\$r\('app\.media\.ui_privacy_local'\)\)/,
-    'Local processing row must use its reference icon')
-  requirePattern(source, /PrivacyRow\([^,]+,\s*\$r\('app\.media\.ui_privacy_offline'\)\)/,
-    'Offline row must use its reference icon')
-  requirePattern(source, /PrivacyRow\([^,]+,\s*\$r\('app\.media\.ui_privacy_storage'\)\)/,
-    'Storage row must use its reference icon')
-  requirePattern(source, /PrivacyRow\([^,]+,\s*\$r\('app\.media\.ui_privacy_access'\)\)/,
-    'Access row must use its reference icon')
-}
+requirePattern(privacy, /PrivacyRow\([^,]+,\s*\$r\('app\.media\.ui_privacy_local'\)\)/,
+  'Local processing row must use its reference icon')
+requirePattern(privacy, /PrivacyRow\([^,]+,\s*\$r\('app\.media\.ui_privacy_offline'\)\)/,
+  'Offline row must use its reference icon')
+requirePattern(privacy, /PrivacyRow\([^,]+,\s*\$r\('app\.media\.ui_privacy_storage'\)\)/,
+  'Storage row must use its reference icon')
+requirePattern(privacy, /PrivacyRow\([^,]+,\s*\$r\('app\.media\.ui_privacy_access'\)\)/,
+  'Access row must use its reference icon')
 
 console.log('HOME ABOUT V2 REFERENCE UI CONTRACT PASSED')

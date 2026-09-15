@@ -11,8 +11,11 @@ function requirePattern(pattern, message) {
 
 requirePattern(/import\s*\{\s*FunctionTile\s*\}/, 'Home must use FunctionTile')
 requirePattern(/app\.media\.ui_hero_home/, 'Home must use the reference hero asset')
-for (const asset of ['image', 'document', 'video', 'audio', 'image_edit', 'archive', 'unit', 'pdf']) {
+for (const asset of ['image', 'document', 'video', 'image_edit', 'archive', 'unit', 'pdf']) {
   requirePattern(new RegExp(`app\\.media\\.ui_tool_${asset}`), `Home is missing ui_tool_${asset}`)
+}
+if (source.includes('ui_tool_audio') || source.includes('音频转换')) {
+  throw new Error('Home must not expose the removed audio conversion feature')
 }
 requirePattern(/columnsTemplate\([^)]*gridColumns/, 'Home must use responsive grid columns')
 requirePattern(/gridColumns[^\n]*'1fr 1fr'|return\s*'1fr 1fr'/, 'Home must use two phone columns')

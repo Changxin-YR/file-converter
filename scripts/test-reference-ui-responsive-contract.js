@@ -3,7 +3,7 @@ const path = require('path')
 
 const pagesDir = path.join(__dirname, '..', 'entry', 'src', 'main', 'ets', 'pages')
 const independentPages = [
-  'ImageConvertPage.ets', 'DocumentConvertPage.ets', 'AudioConvertPage.ets',
+  'ImageConvertPage.ets', 'DocumentConvertPage.ets',
   'VideoConvertPage.ets', 'ImageToolsPage.ets', 'ArchiveTimePage.ets',
   'UnitConverterPage.ets', 'PdfToolsPage.ets', 'AboutPage.ets'
 ]

@@ -2,7 +2,7 @@
 
 ## 目标
 
-将用户提供的 `codex-clipboard-17d2b6c6-c7f9-4150-bd52-0c4ab9847cf2.png` 作为文件转换盒的新应用图标，并满足当前 HarmonyOS Stage 模型工程的资源与上架检查要求。
+将用户提供的 `codex-clipboard-17d2b6c6-c7f9-4150-bd52-0c4ab9847cf2.png` 作为万能格式转换的新应用图标，并满足当前 HarmonyOS Stage 模型工程的资源与上架检查要求。
 
 ## 范围
 

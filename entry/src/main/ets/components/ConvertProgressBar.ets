@@ -12,7 +12,7 @@ export struct ConvertProgressBar {
     Column({ space: 6 }) {
       Progress({ value: this.progress, total: this.total, type: ProgressType.Linear })
         .width('100%')
-        .color($r('app.color.primary'))
+        .color($r('app.color.brand_primary'))
       if (this.showText) {
         Row() {
           Text(`${this.progress}%`)

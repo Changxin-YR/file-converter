@@ -2,7 +2,7 @@
   "modelVersion": "5.0.0",
   "name": "format_converter",
   "version": "1.0.0",
-  "description": "本地文件格式转换工具",
+  "description": "文件格式盒 HarmonyOS 6.0.2(22) 本地离线文件格式转换工具",
   "main": "",
   "author": "MaxTools Studio",
   "license": "Apache-2.0",

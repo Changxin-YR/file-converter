@@ -9,3 +9,33 @@ local.properties
 *.tmp
 /*.dmp
 /tmp/
+
+# --- build / tool artifacts (added during GitHub migration) ---
+/build/
+/entry/build/
+/entry/.preview/
+/entry/.test/
+/.hvigor/
+/.idea/
+/oh_modules/
+/entry/oh_modules/
+/node_modules/
+/.superpowers/
+/.worktrees/
+/.tmp-*/
+/.codex-tmp*/
+__pycache__/
+*.pyc
+
+# --- local signing material (never commit) ---
+*.p12
+*.p7b
+*.cer
+*.keystore
+*.jks
+*.pem
+
+# --- OS / editor noise ---
+.DS_Store
+Thumbs.db
+*.dmp
